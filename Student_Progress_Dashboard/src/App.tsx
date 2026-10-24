@@ -21,6 +21,20 @@ const student: StudentProfile = {
   requiredCredits: 126,
 }
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const update = () => setMatches(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [query])
+
+  return matches
+}
+
 function ProgressMeter({
   label,
   current,
@@ -36,9 +50,17 @@ function ProgressMeter({
     <div className="metric metric--progress">
       <div className="metric__topline">
         <span className="metric__label">{label}</span>
-        <strong>
+        <div
+          className="progress-value"
+          style={{
+            flexShrink: 0,
+            overflow: 'visible',
+            textOverflow: 'clip',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {current} <span>/ {total}</span>
-        </strong>
+        </div>
       </div>
       <div
         className="progress"
@@ -94,6 +116,8 @@ function CalendarIcon() {
 }
 
 export default function App() {
+  const isMobile = useMediaQuery('(max-width: 800px)')
+
   return (
     <main>
       <header className="topbar">
@@ -107,7 +131,17 @@ export default function App() {
           </a>
         </div>
 
-        <div className="student-metrics">
+        <div
+          className="student-metrics"
+          style={{
+            width: 'auto',
+            minWidth: 0,
+            flex: '1 1 0',
+            gridTemplateColumns: isMobile
+              ? '1fr'
+              : 'minmax(0, .85fr) minmax(0, .85fr) minmax(0, .7fr) minmax(0, 1.3fr) minmax(0, 1.3fr)',
+          }}
+        >
           <div className="metric">
             <span className="metric__label">Student</span>
             <SlidingText>{student.name}</SlidingText>
@@ -116,8 +150,14 @@ export default function App() {
 
           <div className="metric">
             <span className="metric__label">Academic year</span>
-            <strong className="academic-year">{student.year}</strong>
+            <SlidingText>{student.year}</SlidingText>
             <span className="metric__detail">{student.semester}</span>
+          </div>
+
+          <div className="metric">
+            <span className="metric__label">Total credits</span>
+            <strong>{student.earnedCredits}</strong>
+            <span className="metric__detail">hours completed</span>
           </div>
 
           <ProgressMeter label="Aggie Ring" current={student.ringHours} total={90} />

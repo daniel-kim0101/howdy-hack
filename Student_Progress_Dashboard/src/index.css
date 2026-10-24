@@ -141,6 +141,7 @@ a {
 .sliding-name__text {
   display: inline-block;
   min-width: max-content;
+  padding-right: 0.2em;
 }
 
 .sliding-name__text--active {
