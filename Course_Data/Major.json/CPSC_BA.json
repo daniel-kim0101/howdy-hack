@@ -1,3 +1,338 @@
 {
-    
+	"CSCE181": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE110/CSCE111/CSCE206": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE120": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE221": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE312": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE313": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE314": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE331": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE411": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE481": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE482": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"STAT211/STAT301/STAT302": {
+		"type": "Math",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE305": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE310": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE320/STAT335": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE402": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE410": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE412": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE413": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE416/ECEN416": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE420": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE421": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE426/ECEN426": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE429": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE430": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE431": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE432": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE433": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE434": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE435": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE436": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE438": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE439": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE440": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE441": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE442": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE443": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE444": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE445": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE446/VIST477": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE447/VIST476": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE448": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE449": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE450": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE451": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE452": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE456": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE461/BMEN428": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE462": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE463": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE464": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE465": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE469/ECEN469": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE470": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CSCE489": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Prescribed Elective"
+	},
+	"CONCENTRATION_ELECTIVE": {
+		"type": "Concentration",
+		"credits": 29,
+		"elective": "yes",
+		"elective_type": "Concentration Elective"
+	}
 }

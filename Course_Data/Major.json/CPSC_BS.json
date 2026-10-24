@@ -1,0 +1,380 @@
+{
+	"CSCE181": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE120": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE221": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE231": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE312": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE313": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE314": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE325": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE331": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE411": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE481": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE482": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE399": {
+		"type": "High-Impact Experience",
+		"credits": 0,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"STAT211": {
+		"type": "Math",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"MATH251/MATH253/MATH308/STAT212": {
+		"type": "Math",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE410/CSCE412/CSCE416/ECEN416/CSCE426/ECEN426/CSCE456/CSCE461/BMEN428/CSCE462/CSCE463/CSCE464/CSCE465/CSCE469/ECEN469": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Systems Electives"
+	},
+	"CSCE429/CSCE430/CSCE431/CSCE434/CSCE435/CSCE438/CSCE451": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Software and Languages Electives"
+	},
+	"CSCE305/CSCE310/CSCE320/STAT335/CSCE420/CSCE421/CSCE432/CSCE436/CSCE439/CSCE441/CSCE443/CSCE444/CSCE445/CSCE446/VIST477/CSCE447/VIST476/CSCE448/CSCE449/CSCE450/CSCE452/CSCE470": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Information and Applications Electives"
+	},
+	"CSCE410": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE412": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE416/ECEN416": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE426/ECEN426": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE456": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE461/BMEN428": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE462": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE463": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE464": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE465": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE469/ECEN469": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE429": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE430": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE431": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE434": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE435": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE438": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE451": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE305": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE310": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE320/STAT335": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE420": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE421": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE432": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE436": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE439": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE441": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE443": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE444": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE445": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE446/VIST477": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE447/VIST476": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE448": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE449": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE450": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE452": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE470": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE433": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE440": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CSCE442": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Upper-level Computer Science and Engineering Electives"
+	},
+	"CHEM120": {
+		"type": "Science",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Science Elective"
+	},
+	"PHYS207": {
+		"type": "Science",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Science Elective"
+	},
+	"BIOL111": {
+		"type": "Science",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Science Elective"
+	},
+	"BIOL112": {
+		"type": "Science",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Science Elective"
+	},
+	"COMPLEMENTARY_ELECTIVE": {
+		"type": "Complementary",
+		"credits": 9,
+		"elective": "yes",
+		"elective_type": "Complementary Elective"
+	}
+}
