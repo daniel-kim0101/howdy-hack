@@ -1,0 +1,536 @@
+{
+    "CSCE120": {
+        "type": "Computer Science",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN248": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MATH251/MATH253": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "PHYS207": {
+        "type": "Science",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "PHYS217/ENGR217": {
+        "type": "Science",
+        "credits": 2,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN214": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN250": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MATH308": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MATH311": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "PHYS222": {
+        "type": "Science",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN314": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN322": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN325": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN340": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN303": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN350/CSCE350": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN370": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN399": {
+        "type": "Electrical Engineering",
+        "credits": 0,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN403": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN404": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ASTR314": {
+        "type": "Science",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "CSCE313": {
+        "type": "Computer Science",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "CSCE314": {
+        "type": "Computer Science",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "ESET352": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH401": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH407": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH412": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH414": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH417": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH470": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MATH471": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MEEN221": {
+        "type": "Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MEEN222/MSEN222": {
+        "type": "Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "MEEN315": {
+        "type": "Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "PHYS221": {
+        "type": "Science",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Approved Elective"
+    },
+    "ECEN326": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN333": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN338": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN360": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN410": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN411": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN412": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN414": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN416": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN419": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN420": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN421": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN422": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN423": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN424": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN425": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN426": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN427": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN428": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN429": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN430": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN431": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN432": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN433": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN434": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN438": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN440": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN441": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN442": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN444": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN445": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN446": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN447": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN448": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN449": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN451": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN453": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN454": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN455": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN457": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN459": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN460": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN461": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN462": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN463": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN464": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN465": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN466": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN471": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN474": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN475": {
+        "type": "Electrical Engineering",
+        "credits": 4,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN477": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN478": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    },
+    "ECEN489": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "ECEN Elective"
+    }
+}
