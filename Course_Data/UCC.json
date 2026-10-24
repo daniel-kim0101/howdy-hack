@@ -1,5 +1,832 @@
 {
-    "KINE282": {
+    "COMM203": {
+        "type": "Communication",
         "credits": 3
-    }
+    },
+    "COMM205": {
+        "type": "Communication",
+        "credits": 3
+    },
+    "COMM243": {
+        "type": "Communication",
+        "credits": 3
+    },
+    "ENGL103": {
+        "type": "Communication",
+        "credits": 3
+    },
+    "ENGL104": {
+        "type": "Communication",
+        "credits": 3
+    },
+    "ENGL203": {
+        "type": "Communication",
+        "credits": 3
+    },
+    "ENGL210": {
+        "type": "Communication",
+        "credits": 3
+    },
+
+
+    "MATH102": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH135": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH136": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH140": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH142": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH147": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH148": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH150": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH151": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH152": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH167": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "MATH171": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "MATH172": {
+        "type": "Mathematics",
+        "credits": 4
+    },
+    "PHIL240": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+    "STAT201": {
+        "type": "Mathematics",
+        "credits": 3
+    },
+
+
+    "AGSM105": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ANSC107": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ANTH225": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ARSC104": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ARSC105/CHEM105": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ASTR101": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ASTR102": {
+        "type": "Life and Physical Sciences",
+        "credits": 1
+    },
+    "ASTR103": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ASTR104": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ASTR109/PHYS109": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ASTR111": {
+        "type": "Life and Physical Sciences",
+        "credits": 4
+    },
+    "ATMO110/GEOL110": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ATMO201": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "ATMO202": {
+        "type": "Life and Physical Sciences",
+        "credits": 1
+    },
+    "BESC201": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "BESC204": {
+        "type": "Life and Physical Sciences",
+        "credits": 3
+    },
+    "BIOL101": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"BIOL104": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"BIOL107": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"BIOL111": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"BIOL112": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"BIOL113": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"CHEM105/ARSC105": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"CHEM106": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"CHEM107": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"CHEM117": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"CHEM119": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"CHEM120": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"ECCB205": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"ECCB215": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"FIVS205": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOG203": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOG205": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOG213": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"GEOL101": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOL102": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"GEOL106": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"GEOL110ATMO110": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOL207": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"GEOL208": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"HORT201": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"HORT202": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"KINE120": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"KINE223": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"MARS102": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"NUTR222": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"OCNG251": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"OCNG252": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"PHYS104": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"PHYS109/ASTR109": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"PHYS123": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"PHYS201": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"PHYS202": {
+		"type": "Life and Physical Sciences",
+		"credits": 4
+	},
+	"PHYS206": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"PHYS207": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"PHYS226": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"PHYS227": {
+		"type": "Life and Physical Sciences",
+		"credits": 1
+	},
+	"POSC201": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+	"SCSC105": {
+		"type": "Life and Physical Sciences",
+		"credits": 3
+	},
+
+
+	"AFST201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"AFST204/ENGL204": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ANTH204": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ANTH205": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ANTH210": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ARAB201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ARAB202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ARAB258": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CHIN201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CHIN202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CLAS220": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CLAS250": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CLAS251/RELS251": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CLAS261": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"CLAS262": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"COSC222": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"DCED201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "ENGL204/AFST204": {
+        "type": "Language, Philosophy and Culture",
+		"credits": 3
+    },
+	"ENGL207": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL221/MODL221": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL222/MODL222": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL227": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL228": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL231": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL232": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ENGL292": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"FILM245/RUSS245": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"FREN201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"FREN202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"GEOG202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"GERM201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"GERM202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"GLST201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST101": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST102": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST103": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST104": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST213": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST220": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST222/RELS222": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST240": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HIST242": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"HMGT204": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"INTA251": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ITAL201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"ITAL202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"JAPN201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 4
+	},
+	"JAPN202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 4
+	},
+	"JWST201/RELS201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"LAND240": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "MODL221/ENGL221": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "MODL222/ENGL222": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"PERF156": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"PHIL111": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"PHIL251": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"PHIL282": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"PSAA210": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"RELS200": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "RELS201/JWST201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"RELS202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "RELS220": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "RELS222/HIST222": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "RELS251/CLAS251": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"RUSS201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"RUSS202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+    "RUSS245/FILM245": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"SPAN201": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"SPAN202": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+	"SPMT220": {
+		"type": "Language, Philosophy and Culture",
+		"credits": 3
+	},
+
+
+	"ARCH249": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ARCH250": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ARTS149": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ARTS150": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"DCED202": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ENDS101": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ENGL212": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ENGL219": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"ENGL251/FILM251": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"FILM215/GLST215": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"FILM251/ENGL251": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"FILM299": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"GLST215/FILM215": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"HISP204": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"HORT203": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"KINE210": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MSTC150": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC201": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC221": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC222": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC224": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC225": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"MUSC226": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"THEA103": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"THEA200": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+	"THEA281": {
+		"type": "Creative Arts",
+		"credits": 3
+	},
+
+
+	"HIST105": {
+		"type": "American History",
+		"credits": 3
+	},
+	"HIST106": {
+		"type": "American History",
+		"credits": 3
+	},
+	"HIST226": {
+		"type": "American History",
+		"credits": 3
+	},
+	"HIST230": {
+		"type": "American History",
+		"credits": 3
+	},
+	"HIST232": {
+		"type": "American History",
+		"credits": 3
+	},
+	"HIST258": {
+		"type": "American History",
+		"credits": 3
+	},
+
+
+	"POLS206": {
+		"type": "Government/Political Science",
+		"credits": 3
+	},
+	"POLS207": {
+		"type": "Government/Political Science",
+		"credits": 3
+	},
+
+
+	"AGEC105": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ANTH201": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ANTH202": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ARCH212": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ATMO215": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ECON202": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ECON203": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"ESST201": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"FINP235": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"GEOG201": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"INST210": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"JOUR102": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"KINE282": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"MARS210": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"PBSI107": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"SOCI205": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"SOCI206": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"SOCI214": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	},
+	"URPN204": {
+		"type": "Social and Behavioral Sciences",
+		"credits": 3
+	}
 }
