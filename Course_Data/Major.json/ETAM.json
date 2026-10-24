@@ -1,0 +1,58 @@
+{
+	"ENGR102": {
+		"type": "ETAM Engineering",
+		"credits": 2
+	},
+	"ENGR216/PHYS216": {
+		"type": "ETAM Engineering",
+		"credits": 3
+	},
+	"CHEM107/CHEM117": {
+		"type": "ETAM Science",
+		"credits": 4
+	},
+	"CHEM119": {
+		"type": "ETAM Science",
+		"credits": 4
+	},
+	"CHEM120": {
+		"type": "ETAM Science",
+		"credits": 4
+	},
+	"PHYS206": {
+		"type": "ETAM Science",
+		"credits": 4
+	},
+	"PHYS207": {
+		"type": "ETAM Science",
+		"credits": 4
+	},
+	"MATH151": {
+		"type": "ETAM Math",
+		"credits": 4
+	},
+	"MATH152": {
+		"type": "ETAM Math",
+		"credits": 4
+	},
+	"MATH251": {
+		"type": "ETAM Math",
+		"credits": 3
+	},
+	"MATH253": {
+		"type": "ETAM Math",
+		"credits": 3
+	},
+	"MATH308": {
+		"type": "ETAM Math",
+		"credits": 3
+	},
+	"MATH304": {
+		"type": "ETAM Math",
+		"credits": 3
+	},
+	"CSCE222": {
+		"type": "ETAM Math",
+		"credits": 3
+	}
+}
