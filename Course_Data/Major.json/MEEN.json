@@ -1,0 +1,458 @@
+{
+    "PHYS217/ENGR217": {
+        "type": "Science",
+        "credits": 2,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MATH251/MATH253": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN210": {
+        "type": "Mechanical Engineering",
+        "credits": 2,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN225": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "PHYS207": {
+        "type": "Science",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "STAT211": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MATH308": {
+        "type": "Math",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ECEN215": {
+        "type": "Electrical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN223": {
+        "type": "Mechanical Engineering",
+        "credits": 2,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN315": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN260": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN305": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN344": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN345": {
+        "type": "Mechanical Engineering",
+        "credits": 1,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN357": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN363": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN381": {
+        "type": "Mechanical Engineering",
+        "credits": 1,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN399": {
+        "type": "Mechanical Engineering",
+        "credits": 0,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN360": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN361": {
+        "type": "Mechanical Engineering",
+        "credits": 1,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN364": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN365": {
+        "type": "Mechanical Engineering",
+        "credits": 1,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN368": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN461": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN464": {
+        "type": "Mechanical Engineering",
+        "credits": 1,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "ISEN302": {
+        "type": "Industrial Engineering",
+        "credits": 2,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN401": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN402": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "no",
+        "elective_type": ""
+    },
+    "MEEN405": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN407": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN408": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN411": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN412": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN431": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN432": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN434": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN440": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN441": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN442": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN444": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN445": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN451": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN453": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN454": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN455": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN458": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN459": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN460": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN467": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN471": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN475": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN488": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Mechanical and Manufacturing Systems"
+    },
+    "MEEN406": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN410": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN416": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN417": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN421": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN435": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN436": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN437": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN439": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN463": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN469": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN472": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN477": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN483": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN496": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN498": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Thermo-fluid and Energy Systems"
+    },
+    "MEEN404": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Data Science and Experimentation"
+    },
+    "MEEN423": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Data Science and Experimentation"
+    },
+    "MEEN433": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Data Science and Experimentation"
+    },
+    "MEEN489": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Technical Elective - Special Topics"
+    },
+    "NON_MEEN_TECHNICAL_ELECTIVE": {
+        "type": "Technical",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "Non-MEEN Technical Elective"
+    },
+    "MEEN473": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "General Elective"
+    },
+    "MEEN497": {
+        "type": "Mechanical Engineering",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "General Elective"
+    },
+    "GENERAL_ELECTIVE": {
+        "type": "General",
+        "credits": 3,
+        "elective": "yes",
+        "elective_type": "General Elective"
+    }
+}
