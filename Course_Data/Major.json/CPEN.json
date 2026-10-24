@@ -1,0 +1,488 @@
+{
+	"CSCE120": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE221": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE313": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE331": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE481": {
+		"type": "Computer Science",
+		"credits": 1,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN214": {
+		"type": "Electrical Engineering",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN248": {
+		"type": "Electrical Engineering",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN314": {
+		"type": "Electrical Engineering",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN325": {
+		"type": "Electrical Engineering",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN454": {
+		"type": "Electrical Engineering",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"PHYS217/ENGR217": {
+		"type": "Engineering",
+		"credits": 2,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"MATH311": {
+		"type": "Math",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE350/ECEN350": {
+		"type": "Computer Science",
+		"credits": 4,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE462/ECEN449": {
+		"type": "Computer Science",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN303/STAT211": {
+		"type": "Math",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE399/ECEN399": {
+		"type": "High-Impact Experience",
+		"credits": 0,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"MATH407/MATH412/MATH414/MATH431/MATH471/MEEN315/MEEN221/MEEN222/MSEN222/PHYS221/PHYS222": {
+		"type": "Engineering",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Engineering Elective"
+	},
+	"ECEN403": {
+		"type": "Senior Design",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"ECEN404": {
+		"type": "Senior Design",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE483": {
+		"type": "Senior Design",
+		"credits": 3,
+		"elective": "no",
+		"elective_type": ""
+	},
+	"CSCE463": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE464": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE465": {
+		"type": "Communications and Networks; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN423": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN424": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN434": {
+		"type": "Communications and Networks; Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN455": {
+		"type": "Communications and Networks; Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN461": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN466/CYBR466": {
+		"type": "Communications and Networks; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN478": {
+		"type": "Communications and Networks",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"MATH470": {
+		"type": "Communications and Networks; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE305/ECEN360/STAT315": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE310": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE320/STAT335": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE420": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE421/ECEN427/STAT421": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE436": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE439": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE447/VIST476": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE470": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN446": {
+		"type": "Data Science, Artificial Intelligence and Machine Learning",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE441": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE443": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE446/VIST477": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE448": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE450": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE452": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN419": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN420": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN422": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN442": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN444": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN447": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN448": {
+		"type": "Signals and Systems, Graphics and Robotics",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE314": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE410": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE411": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE412": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE413": {
+		"type": "Software and Systems; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE429": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE430": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE431": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE432": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE434": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE435": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE438": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE440": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE442": {
+		"type": "Software and Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE451": {
+		"type": "Software and Systems; Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE416/ECEN416": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE461/BMEN428": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE462": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE469/ECEN469": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN326": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN428": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN449": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN468": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN474": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 4,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"ECEN475": {
+		"type": "VLSI and Hardware Systems",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE449": {
+		"type": "Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	},
+	"CSCE426/ECEN426": {
+		"type": "Security",
+		"credits": 3,
+		"elective": "yes",
+		"elective_type": "Area Elective"
+	}
+}
