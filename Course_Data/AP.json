@@ -1,0 +1,729 @@
+{
+  "university": "Texas A&M University",
+  "college_board_code": "6003",
+  "source_url": null,
+  "last_updated": "2026-10-24T00:00:00Z",
+  "ap_conversions": [
+    {
+      "exam_id": "ap-african-american-studies",
+      "exam_name": "AP African American Studies",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "AFST289"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-research",
+      "exam_name": "AP Research",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "SPECIAL"
+          ],
+          "note": "Source: 'See academic Advisor' (footnote 1), up to 3 hours"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-seminar",
+      "exam_name": "AP Seminar",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "SPECIAL"
+          ],
+          "note": "Source: 'See academic Advisor' (footnote 1), up to 3 hours"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-studio-art-history",
+      "exam_name": "AP Art History",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ARTS149"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 6,
+          "courses": [
+            "ARTS149",
+            "ARTS150"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-biology",
+      "exam_name": "AP Biology",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "BIOL113"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 8,
+          "courses": [
+            "BIOL111",
+            "BIOL112"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-calculus-ab",
+      "exam_name": "AP Calculus AB",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "MATH142"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 4,
+          "courses": [
+            "MATH151"
+          ],
+          "note": "Asterisk on source; footnote text not provided"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-calculus-bc",
+      "exam_name": "AP Calculus BC",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "MATH151"
+          ],
+          "note": "Asterisk on source; footnote text not provided"
+        },
+        {
+          "min_score": 4,
+          "credits": 8,
+          "courses": [
+            "MATH151",
+            "MATH152"
+          ],
+          "note": "Asterisk on source; footnote text not provided"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-chemistry",
+      "exam_name": "AP Chemistry",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "CHEM119"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 8,
+          "courses": [
+            "CHEM119",
+            "CHEM120"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-chinese-language-and-culture",
+      "exam_name": "AP Chinese Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "CHIN101",
+            "CHIN102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 14,
+          "courses": [
+            "CHIN101",
+            "CHIN102",
+            "CHIN201",
+            "CHIN202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-comparative-government-and-politics",
+      "exam_name": "AP Comparative Government and Politics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "POLS229"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-computer-science-a",
+      "exam_name": "AP Computer Science A",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "CSCE110"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-computer-science-principles",
+      "exam_name": "AP Computer Science Principles",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "CSCE110"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-english-language-and-composition",
+      "exam_name": "AP English Language and Composition",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ENGL104"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 6,
+          "courses": [
+            "ENGL104",
+            "ENGL241"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-english-literature-and-composition",
+      "exam_name": "AP English Literature and Composition",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ENGL104"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 6,
+          "courses": [
+            "ENGL104",
+            "ENGL203"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-environmental-science",
+      "exam_name": "AP Environmental Science",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "GEOS105"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-european-history",
+      "exam_name": "AP European History",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "HIST102"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-french-language-and-culture",
+      "exam_name": "AP French Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "FREN101",
+            "FREN102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 14,
+          "courses": [
+            "FREN101",
+            "FREN102",
+            "FREN201",
+            "FREN202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-german-language-and-culture",
+      "exam_name": "AP German Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "GERM101",
+            "GERM102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 14,
+          "courses": [
+            "GERM101",
+            "GERM102",
+            "GERM201",
+            "GERM202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-human-geography",
+      "exam_name": "AP Human Geography",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "GEOG201"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-italian-language-and-culture",
+      "exam_name": "AP Italian Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "ITAL101",
+            "ITAL102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 14,
+          "courses": [
+            "ITAL101",
+            "ITAL102",
+            "ITAL201",
+            "ITAL202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-japanese-language-and-culture",
+      "exam_name": "AP Japanese Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "JAPN101",
+            "JAPN102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 16,
+          "courses": [
+            "JAPN101",
+            "JAPN102",
+            "JAPN201",
+            "JAPN202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-latin",
+      "exam_name": "AP Latin",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "CLAS121",
+            "CLAS122"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 14,
+          "courses": [
+            "CLAS121",
+            "CLAS122",
+            "CLAS221",
+            "CLAS222"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-macroeconomics",
+      "exam_name": "AP Macroeconomics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ECON203"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-microeconomics",
+      "exam_name": "AP Microeconomics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ECON202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-music-theory",
+      "exam_name": "AP Music Theory",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "MUSC204",
+            "MUSC208"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-physics-1",
+      "exam_name": "AP Physics 1",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "PHYS205"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 4,
+          "courses": [
+            "PHYS201"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-physics-2",
+      "exam_name": "AP Physics 2",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 4,
+          "courses": [
+            "PHYS205"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 4,
+          "courses": [
+            "PHYS202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-physics-c-electricity-and-magnetism",
+      "exam_name": "AP Physics C: Electricity and Magnetism",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "PHYS207"
+          ],
+          "alternative": {
+            "credits": 4,
+            "courses": [
+              "PHYS227"
+            ]
+          },
+          "note": "Source: 'PHYS 207 or PHYS 227', '3 or 4' with ** footnote not provided; pairing 207=3 / 227=4 is my reading of the order"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-physics-c-mechanics",
+      "exam_name": "AP Physics C: Mechanics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "PHYS206"
+          ],
+          "alternative": {
+            "credits": 4,
+            "courses": [
+              "PHYS226"
+            ]
+          },
+          "note": "Source: 'PHYS 206 or PHYS 226', '3 or 4' with ** footnote not provided; pairing 206=3 / 226=4 is my reading of the order"
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-precalculus",
+      "exam_name": "AP Precalculus",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "MATH102"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-psychology",
+      "exam_name": "AP Psychology",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "PBSI107"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-spanish-language-and-culture",
+      "exam_name": "AP Spanish Language and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 8,
+          "courses": [
+            "SPAN101",
+            "SPAN102"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 11,
+          "courses": [
+            "SPAN101",
+            "SPAN102",
+            "SPAN201"
+          ]
+        },
+        {
+          "min_score": 5,
+          "credits": 14,
+          "courses": [
+            "SPAN101",
+            "SPAN102",
+            "SPAN201",
+            "SPAN202"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-spanish-literature-and-culture",
+      "exam_name": "AP Spanish Literature and Culture",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "SPAN202"
+          ]
+        },
+        {
+          "min_score": 5,
+          "credits": 6,
+          "courses": [
+            "SPAN202",
+            "SPAN320"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-statistics",
+      "exam_name": "AP Statistics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "STAT201"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-studio-art-2-d-design",
+      "exam_name": "AP Studio Art: 2-D Design",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ARTS103"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 6,
+          "courses": [
+            "ARTS103",
+            "ARTS111"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-studio-art-3-d-design",
+      "exam_name": "AP Studio Art: 3-D Design",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ARTS103"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-studio-art-drawing",
+      "exam_name": "AP Studio Art: Drawing",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "ARTS103"
+          ]
+        },
+        {
+          "min_score": 4,
+          "credits": 6,
+          "courses": [
+            "ARTS103",
+            "ARTS111"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-us-government-and-politics",
+      "exam_name": "AP United States Government and Politics",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "POLS206"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-us-history",
+      "exam_name": "AP United States History",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 6,
+          "courses": [
+            "HIST105",
+            "HIST106"
+          ]
+        }
+      ]
+    },
+    {
+      "exam_id": "ap-world-history",
+      "exam_name": "AP World History",
+      "awards": [
+        {
+          "min_score": 3,
+          "credits": 3,
+          "courses": [
+            "HIST104"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_note": "Texas A&M Testing Services AP/IB Credits table, copied by the user on 2026-10-24"
+}
