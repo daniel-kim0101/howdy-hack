@@ -1,0 +1,80 @@
+{
+  "Cultural Discourse (CD)": {
+    "required_credits": 3,
+    "courses": {
+      "AFST201": 3,
+      "AGSM105": 3,
+      "ANTH210": 3,
+      "ANTH222": 3,
+      "ARAB215": 3,
+      "ARTS339": 3,
+      "ARTS349": 3,
+      "ATMO110/GEOL110": 3,
+      "CARC101": 3,
+      "COMM343": 3,
+      "DCED201": 3,
+      "ENGL211/GLST211": 3,
+      "FILM215/GLST215": 3,
+      "PHIL111": 3,
+      "PHIL282": 3,
+      "PHIL482": 3
+    }
+  },
+  "International & Cultural Diversity (ICD)": {
+    "required_credits": 3,
+    "courses": {
+      "ANTH201": 3,
+      "ANTH205": 3,
+      "ARCH249": 3,
+      "ARCH250": 3,
+      "ARTS149": 3,
+      "ARTS150": 3,
+      "COMM335": 3,
+      "COMM340": 3,
+      "DCED202": 3,
+      "ENDS101": 3,
+      "FILM299": 3,
+      "GEOG201": 3,
+      "HORT335": 3,
+      "KINE282": 3,
+      "MUSC201": 3,
+      "MUSC226": 3,
+      "PBSI107": 3,
+      "POLS231": 3,
+      "SOCI205": 3,
+      "THEA281": 3
+    }
+  },
+  "Foreign Language": {
+    "required_credits": 0,
+    "languages": {
+      "CHIN": "Chinese",
+      "FREN": "French",
+      "GERM": "German",
+      "JAPN": "Japanese",
+      "SPAN": "Spanish"
+    },
+    "courses": {
+      "CHIN101": 4,
+      "CHIN102": 4,
+      "CHIN201": 3,
+      "CHIN202": 3,
+      "FREN101": 4,
+      "FREN102": 4,
+      "FREN201": 3,
+      "FREN202": 3,
+      "GERM101": 4,
+      "GERM102": 4,
+      "GERM201": 3,
+      "GERM202": 3,
+      "JAPN101": 4,
+      "JAPN102": 4,
+      "JAPN201": 4,
+      "JAPN202": 4,
+      "SPAN101": 4,
+      "SPAN102": 4,
+      "SPAN201": 3,
+      "SPAN202": 3
+    }
+  }
+}
