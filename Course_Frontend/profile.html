@@ -4,34 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create a Profile</title>
-    <link rel="stylesheet" href="/src/index.css" />
   </head>
   <body>
-    <main class="index-page">
-      <section class="index-card" aria-labelledby="profile-title">
-        <div class="brand__mark index-logo" aria-label="App logo placeholder">
-          <span>LOGO</span>
-        </div>
-        <p class="eyebrow">Student planning portal</p>
-        <h1 id="profile-title">Create your profile</h1>
-        <p class="signin-intro">Enter your information to get started.</p>
-
-        <form class="signin-form">
-          <label>
-            Full name
-            <input type="text" name="name" autocomplete="name" placeholder="Enter your full name" />
-          </label>
-          <label>
-            UIN
-            <input type="text" name="uin" inputmode="numeric" autocomplete="username" placeholder="Enter your UIN" />
-          </label>
-          <button type="button">Create profile</button>
-        </form>
-
-        <p class="profile-prompt">
-          Already have an account? <a href="/index.html">Sign in</a>
-        </p>
-      </section>
-    </main>
+    <div id="root"></div>
+    <script type="module" src="/src/profile-main.tsx"></script>
   </body>
 </html>

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const months = Array.from({ length: 12 }, (_, month) =>
+  new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2025, month, 1)),
+)
 const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
 
 function dateKey(date: Date) {
@@ -8,10 +11,6 @@ function dateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
-}
-
-function monthValue(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
 function DegreeIcon() {
@@ -47,25 +46,26 @@ export default function CalendarApp() {
     ? new Date(`${eventDate}T12:00:00`)
     : null
   const today = new Date()
-  const [visibleMonth, setVisibleMonth] = useState(
-    () => parsedEventDate ?? new Date(today.getFullYear(), today.getMonth(), 1),
-  )
+  const [focusedDate, setFocusedDate] = useState(() => parsedEventDate ?? today)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerYear, setPickerYear] = useState(() => (parsedEventDate ?? today).getFullYear())
 
   const calendarDays = useMemo(() => {
-    const year = visibleMonth.getFullYear()
-    const month = visibleMonth.getMonth()
-    const firstVisible = new Date(year, month, 1 - new Date(year, month, 1).getDay())
-    return Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(firstVisible)
-      date.setDate(firstVisible.getDate() + index)
+    const weekStart = new Date(focusedDate)
+    weekStart.setDate(focusedDate.getDate() - focusedDate.getDay())
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(weekStart)
+      date.setDate(weekStart.getDate() + index)
       return date
     })
-  }, [visibleMonth])
+  }, [focusedDate])
 
-  const changeMonth = (amount: number) => {
-    setVisibleMonth(
-      (current) => new Date(current.getFullYear(), current.getMonth() + amount, 1),
-    )
+  const changeWeek = (amount: number) => {
+    setFocusedDate((current) => {
+      const next = new Date(current)
+      next.setDate(current.getDate() + amount * 7)
+      return next
+    })
   }
 
   return (
@@ -105,31 +105,62 @@ export default function CalendarApp() {
           <div>
             <p className="eyebrow">Academic schedule</p>
             <div className="calendar-title-row">
-              <h1 id="calendar-title">{monthFormatter.format(visibleMonth)}</h1>
-              <label className="month-picker" aria-label="Choose a month">
+              <h1 id="calendar-title">{monthFormatter.format(focusedDate)}</h1>
+              <button
+                className="month-picker"
+                type="button"
+                aria-label="Choose a month"
+                aria-expanded={pickerOpen}
+                onClick={() => {
+                  setPickerYear(focusedDate.getFullYear())
+                  setPickerOpen((open) => !open)
+                }}
+              >
                 <MonthPickerIcon />
-                <input
-                  type="month"
-                  value={monthValue(visibleMonth)}
-                  onChange={(event) => {
-                    const [year, month] = event.target.value.split('-').map(Number)
-                    if (year && month) setVisibleMonth(new Date(year, month - 1, 1))
-                  }}
-                />
-              </label>
+              </button>
+              {pickerOpen && (
+                <div className="month-popover">
+                  <div className="year-picker">
+                    <button type="button" onClick={() => setPickerYear((year) => year - 1)}>
+                      ←
+                    </button>
+                    <strong>{pickerYear}</strong>
+                    <button type="button" onClick={() => setPickerYear((year) => year + 1)}>
+                      →
+                    </button>
+                  </div>
+                  <div className="month-options">
+                    {months.map((monthName, month) => (
+                      <button
+                        type="button"
+                        key={monthName}
+                        onClick={() => {
+                          const year = pickerYear
+                          const isCurrentMonth =
+                            year === today.getFullYear() && month === today.getMonth()
+                          setFocusedDate(isCurrentMonth ? today : new Date(year, month, 1))
+                          setPickerOpen(false)
+                        }}
+                      >
+                        {monthName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="month-controls" aria-label="Calendar navigation">
-            <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month">
+            <button type="button" onClick={() => changeWeek(-1)} aria-label="Previous week">
               ←
             </button>
             <button
               type="button"
-              onClick={() => setVisibleMonth(new Date(today.getFullYear(), today.getMonth(), 1))}
+              onClick={() => setFocusedDate(today)}
             >
               Today
             </button>
-            <button type="button" onClick={() => changeMonth(1)} aria-label="Next month">
+            <button type="button" onClick={() => changeWeek(1)} aria-label="Next week">
               →
             </button>
           </div>
@@ -144,7 +175,7 @@ export default function CalendarApp() {
           <div className="month-grid">
             {calendarDays.map((date) => {
               const key = dateKey(date)
-              const outsideMonth = date.getMonth() !== visibleMonth.getMonth()
+              const outsideMonth = date.getMonth() !== focusedDate.getMonth()
               const isToday = key === dateKey(today)
               return (
                 <div
