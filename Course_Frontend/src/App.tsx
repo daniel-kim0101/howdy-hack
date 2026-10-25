@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from 'react'
 import catalogFile from '../../Course_Data/Major.json/CPSC_BS.json' // copy of Course_Data/Major.json/CPSC_BS.json
 import uccFile from '../../Course_Data/UCC.json'
 import apFile from '../../Course_Data/AP.json'
@@ -7,12 +15,30 @@ import {
   type UccCategoryResult,
 } from './creditSources'
 
-type StudentProfile = { name: string; uin: string; year: string; semester: string }
-// Fallback/default values. Name, UIN, year and semester come from the logged-in user when available.
-const student: StudentProfile = { name: 'Daniel Kim', uin: '93535', year: 'Freshman', semester: '1st semester' }
+type StudentProfile = {
+  name: string
+  uin: string
+  major: string
+  year: string
+  semester: string
+}
 
-// Shape of the profile object the login screen stores under 'activeLoggedInUser'.
-type ActiveUser = { name: string; uin: string | number; year?: string; sem?: string; semester?: string }
+const student: StudentProfile = {
+  name: 'Daniel Kim',
+  uin: '93535',
+  major: 'CPSC_BS',
+  year: 'Freshman',
+  semester: '1st semester',
+}
+
+type ActiveUser = {
+  name: string
+  uin: string | number
+  major?: string
+  year?: string
+  sem?: string
+  semester?: string
+}
 
 // Everything the planner saves for one student under `classes_${uin}`.
 // otherTamuHours / transferHours are inputs; ringHours / requiredCredits are calculated and saved for convenience.
@@ -366,6 +392,7 @@ const control: CSSProperties = { padding: '7px 9px', border: '1px solid #bdb5ad'
 const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }
 
 const classesKey = (user: ActiveUser) => `classes_${user.uin}`
+const formatMajor = (major: string) => major.replace(/_/g, ' ')
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 const toHours = (value: unknown) => {
   const number = typeof value === 'number' ? value : Number(value)
@@ -405,20 +432,62 @@ function SlidingText({ children }: { children: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
   const [overflow, setOverflow] = useState(0)
-  useEffect(() => {
+
+  useLayoutEffect(() => {
+    let disposed = false
+
     const measure = () => {
-      if (!containerRef.current || !textRef.current) return
-      setOverflow(Math.max(0, textRef.current.scrollWidth - containerRef.current.clientWidth))
+      if (
+        disposed ||
+        !containerRef.current ||
+        !textRef.current
+      ) {
+        return
+      }
+
+      setOverflow(
+        Math.max(
+          0,
+          textRef.current.scrollWidth -
+            containerRef.current.clientWidth,
+        ),
+      )
     }
+
     measure()
+
     const observer = new ResizeObserver(measure)
-    if (containerRef.current) observer.observe(containerRef.current)
-    return () => observer.disconnect()
+    observer.observe(containerRef.current)
+    observer.observe(textRef.current)
+
+    void document.fonts?.ready.then(measure)
+
+    return () => {
+      disposed = true
+      observer.disconnect()
+    }
   }, [children])
-  return <div className="sliding-name" ref={containerRef}>
-    <span ref={textRef} className="sliding-name__text sliding-name__text--active"
-      style={{ '--name-overflow': `${overflow}px` } as CSSProperties}>{children}</span>
-  </div>
+
+  return (
+    <div className="sliding-name" ref={containerRef}>
+      <span
+        ref={textRef}
+        className={
+          overflow > 1
+            ? 'sliding-name__text sliding-name__text--active'
+            : 'sliding-name__text'
+        }
+        style={
+          {
+            '--name-overflow': `${overflow}px`,
+          } as CSSProperties
+        }
+        title={children}
+      >
+        {children}
+      </span>
+    </div>
+  )
 }
 
 function CalendarIcon() {
@@ -593,9 +662,14 @@ export default function App() {
   const apExams = apTable.exams.filter(exam => !apFilterText || exam.name.toLowerCase().includes(apFilterText))
 
   const displayName = activeUser.name || student.name
-  const displayUin = String(activeUser.uin)
-  const displayYear = activeUser.year ? capitalize(activeUser.year) : student.year
-  const displaySemester = activeUser.sem ? `Semester ${activeUser.sem}` : activeUser.semester || student.semester
+const displayUin = String(activeUser.uin)
+const displayMajor = formatMajor(activeUser.major || student.major)
+const displayYear = activeUser.year
+  ? capitalize(activeUser.year)
+  : student.year
+const displaySemester = activeUser.sem
+  ? `Semester ${activeUser.sem}`
+  : activeUser.semester || student.semester
 
   return <main>
     <header className="topbar">
@@ -619,7 +693,13 @@ export default function App() {
       </div>
       <div className="student-metrics" style={{ width: 'auto', minWidth: 0, flex: '1 1 0',
         gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, .85fr) minmax(0, .85fr) minmax(0, .7fr) minmax(0, 1.3fr) minmax(0, 1.3fr)' }}>
-        <div className="metric"><span className="metric__label">Student</span><SlidingText>{displayName}</SlidingText><span className="metric__detail">UIN {displayUin}</span></div>
+        <div className="metric">
+  <span className="metric__label">Student</span>
+  <SlidingText>{displayName}</SlidingText>
+  <span className="metric__detail">
+    UIN {displayUin} · {displayMajor}
+  </span>
+</div>
         <div className="metric"><span className="metric__label">Academic year</span><SlidingText>{displayYear}</SlidingText><span className="metric__detail">{displaySemester}</span></div>
         <div className="metric"><span className="metric__label">Total credits</span><strong>{hours.ringHours}</strong><span className="metric__detail">hours completed</span></div>
         <ProgressMeter label="Aggie Ring" current={hours.ringHours} total={RING_TOTAL_HOURS} />
@@ -633,31 +713,51 @@ export default function App() {
       </div>
       {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
 
-      <section aria-label="Credit hours summary" style={{ ...panel, display: 'grid', gap: 16, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
-        <div>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Aggie Ring hours</div>
-          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Total completed hours: <strong>{hours.ringHours} / {RING_TOTAL_HOURS}</strong> · {hours.ringRemaining} remaining</p>
-          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Hours earned at Texas A&amp;M: <strong>{hours.institutionHours} / {RING_RESIDENT_HOURS}</strong> · {hours.residentRemaining} remaining</p>
-          <p style={{ margin: '0 0 4px', fontSize: 14 }}>{hours.ringHoursMet ? 'Hour requirements met.' : 'Hour requirements not yet met.'}</p>
-          <p style={{ margin: 0, fontSize: 12 }}>The Ring also requires a 2.0 cumulative GPR and good academic standing, which this planner does not track.</p>
-        </div>
-        <div>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Degree credits</div>
-          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Credits toward degree: <strong>{hours.degreeEarned} / {hours.requiredCredits}</strong> · {hours.degreeRemaining} remaining</p>
-          <p style={{ margin: 0, fontSize: 12 }}>CS BS major and UCC requirements applied: {report.degree_credits} credits (includes {Math.min(ap.hours, report.degree_credits)} from AP where it matches). Other hours below are assumed to apply to your degree.</p>
-        </div>
-        <div style={{ gridColumn: '1 / -1', display: 'grid', gap: 8, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
-          <label>Other TAMU hours not listed in this planner (electives, etc.)
-            <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="number" min="0" max={MAX_EXTRA_HOURS} step="1"
-              placeholder="0" value={otherTamuHours === 0 ? '' : otherTamuHours} onChange={event => setOtherTamuHours(toHours(event.target.value))} />
-          </label>
-          <label>Other transfer / credit-by-exam hours (AP exams are counted from the AP column)
-            <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="number" min="0" max={MAX_EXTRA_HOURS} step="1"
-              placeholder="0" value={transferHours === 0 ? '' : transferHours} onChange={event => setTransferHours(toHours(event.target.value))} />
-          </label>
-          <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 12 }}>Courses you check below count as Texas A&amp;M hours. AP exams you enter in the AP column count toward the 90 but not the 45, and the courses they cover are checked off for you. For transfer or other credit by exam that is not in the AP list, leave the course unchecked and add its hours to the box above.</p>
-        </div>
-      </section>
+      <section aria-label="Credit hours summary" style={panel}>
+  <div style={{
+    display: 'grid',
+    gap: 8,
+    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+  }}>
+    <label>
+      Other TAMU hours not listed in this planner (electives, etc.)
+      <input
+        style={{
+          ...control,
+          display: 'block',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+        type="number"
+        min="0"
+        max={MAX_EXTRA_HOURS}
+        step="1"
+        placeholder="0"
+        value={otherTamuHours === 0 ? '' : otherTamuHours}
+        onChange={event => setOtherTamuHours(toHours(event.target.value))}
+      />
+    </label>
+
+    <label>
+      Other transfer / credit-by-exam hours (excluding AP entered below)
+      <input
+        style={{
+          ...control,
+          display: 'block',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+        type="number"
+        min="0"
+        max={MAX_EXTRA_HOURS}
+        step="1"
+        placeholder="0"
+        value={transferHours === 0 ? '' : transferHours}
+        onChange={event => setTransferHours(toHours(event.target.value))}
+      />
+    </label>
+  </div>
+</section>
 
       <div className="requirements-table">
         <section className="requirements-column">

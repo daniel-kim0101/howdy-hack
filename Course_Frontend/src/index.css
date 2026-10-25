@@ -104,8 +104,11 @@ a {
   min-width: 0;
   flex: 1 1 auto;
   grid-template-columns:
-    minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 0.7fr)
-    minmax(0, 1.3fr) minmax(0, 1.3fr);
+    minmax(0, 1fr)
+    minmax(0, 0.85fr)
+    minmax(0, 0.7fr)
+    minmax(0, 1.25fr)
+    minmax(0, 1.25fr);
 }
 
 .metric {
@@ -409,19 +412,22 @@ h1 {
   }
 
   .brand {
-    flex-basis: auto;
-    justify-content: space-between;
-    padding: 18px 28px;
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  }
+  display: flex;
+  flex: 0 0 210px;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
 
   .brand__mark {
-    width: 52px;
-    height: 52px;
-    flex-basis: 52px;
-    border-radius: 14px;
-  }
+  display: grid;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  place-items: center;
+  border-radius: 16px;
+}
 
   .calendar-link {
     flex-direction: row;
