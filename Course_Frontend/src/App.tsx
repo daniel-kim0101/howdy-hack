@@ -468,7 +468,21 @@ export default function App() {
   return <main>
     <header className="topbar">
       <div className="brand">
-        <div className="brand__mark" aria-label="App logo placeholder"><span>LOGO</span></div>
+        <div
+          className="brand__mark"
+          style={{ padding: 0, border: 'none', overflow: 'hidden' }}
+        >
+          <img
+            src="/app-logo.png"
+            alt="DO logo"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+            />
+        </div>
         <a className="calendar-link" href="/calendar.html"><CalendarIcon /><span>Calendar</span></a>
       </div>
       <div className="student-metrics" style={{ width: 'auto', minWidth: 0, flex: '1 1 0',

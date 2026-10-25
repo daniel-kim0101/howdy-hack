@@ -103,7 +103,19 @@ export default function ProfileApp() {
     return (
         <main className="index-page">
             <section className="index-card" aria-labelledby="profile-title">
-                <div className="brand__mark index-logo"><span>LOGO</span></div>
+                <div className="brand__mark index-logo"
+                >
+                    <img
+                        src="/app-logo.png"
+                        alt="DO logo"
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                        }}
+                        />
+                    </div>
                 <p className="eyebrow">Student planning portal</p>
                 <h1 id="profile-title">Create your profile</h1>
                 <p className="signin-intro">Enter your information to get started.</p>

@@ -42,7 +42,16 @@ export default function LoginApp() {
     <main className="index-page">
       <section className="index-card" aria-labelledby="index-title">
         <div className="brand__mark index-logo" aria-label="App logo placeholder">
-          <span>LOGO</span>
+          <img
+            src="/app-logo.png"
+            alt="DO logo"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
         </div>
         <p className="eyebrow">Student planning portal</p>
         <h1 id="index-title">Welcome back</h1>
