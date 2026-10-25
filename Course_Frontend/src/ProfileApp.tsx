@@ -7,11 +7,14 @@ interface StudentProfile {
     sem: string;
 }
 
-// Same shape the Degree Planner loads/saves under `classes_${uin}`
 interface SavedPlanner {
     completed: string[];
     customCourses: { id: string; name: string; credits: number; completed: boolean }[];
     highImpact: boolean;
+    otherTamuHours: number;
+    transferHours: number;
+    ringHours: number;
+    requiredCredits: number;
 }
 
 // Set to true to also download a real "<UIN>.json" file to the user's computer on signup.
@@ -84,7 +87,10 @@ export default function ProfileApp() {
         //    classes_<UIN>  -> their Degree Planner data (only created if it doesn't exist yet)
         localStorage.setItem(`profile_${newUIN}`, JSON.stringify(profileData));
         if (localStorage.getItem(`classes_${newUIN}`) === null) {
-            const emptyPlanner: SavedPlanner = { completed: [], customCourses: [], highImpact: false };
+            const emptyPlanner: SavedPlanner = {
+                completed: [], customCourses: [], highImpact: false,
+                otherTamuHours: 0, transferHours: 0, ringHours: 0, requiredCredits: 126,
+            };
             localStorage.setItem(`classes_${newUIN}`, JSON.stringify(emptyPlanner));
         }
 
@@ -103,7 +109,21 @@ export default function ProfileApp() {
     return (
         <main className="index-page">
             <section className="index-card" aria-labelledby="profile-title">
-                <div className="brand__mark index-logo"><span>LOGO</span></div>
+                <div className="brand__mark index-logo">
+                    <div className="brand__mark index-logo"
+                >
+                    <img
+                        src="/app-logo.png"
+                        alt="DO logo"
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                        }}
+                        />
+                    </div>
+                </div>
                 <p className="eyebrow">Student planning portal</p>
                 <h1 id="profile-title">Create your profile</h1>
                 <p className="signin-intro">Enter your information to get started.</p>

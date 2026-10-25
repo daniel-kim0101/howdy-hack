@@ -1,21 +1,19 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import catalogFile from '../../Course_Data/Major.json/CPSC_BS.json' // copy of Course_Data/Major.json/CPSC_BS.json
 
-type StudentProfile = {
-  name: string; uin: string; year: string; semester: string
-  ringHours: number; requiredCredits: number
-}
+type StudentProfile = { name: string; uin: string; year: string; semester: string }
 // Fallback/default values. Name, UIN, year and semester come from the logged-in user when available.
-const student: StudentProfile = {
-  name: 'Daniel Kim', uin: '93535', year: 'Freshman', semester: '1st semester',
-  ringHours: 33, requiredCredits: 126,
-}
+const student: StudentProfile = { name: 'Daniel Kim', uin: '93535', year: 'Freshman', semester: '1st semester' }
 
 // Shape of the profile object the login screen stores under 'activeLoggedInUser'.
 type ActiveUser = { name: string; uin: string | number; year?: string; sem?: string; semester?: string }
 
 // Everything the planner saves for one student under `classes_${uin}`.
-type SavedPlanner = { completed: string[]; customCourses: CustomCourse[]; highImpact: boolean }
+// otherTamuHours / transferHours are inputs; ringHours / requiredCredits are calculated and saved for convenience.
+type SavedPlanner = {
+  completed: string[]; customCourses: CustomCourse[]; highImpact: boolean
+  otherTamuHours: number; transferHours: number; ringHours: number; requiredCredits: number
+}
 
 type CourseOption = {
   course_id: string; canonical_id?: string; name?: string; credits: number
@@ -34,6 +32,14 @@ type Report = {
   credit_requirements: { full_degree_total: number }
 }
 type CustomCourse = { id: string; name: string; credits: number; completed: boolean }
+
+// ---------- Texas A&M credit rules ----------
+// Aggie Ring (undergraduate): 90 total completed hours, 45 of them earned at Texas A&M.
+// Credit by exam (AP) and transfer hours count toward the 90 but NOT toward the 45.
+// The Ring also needs a 2.0 cumulative GPR and good standing, which this planner does not track.
+const RING_TOTAL_HOURS = 90
+const RING_RESIDENT_HOURS = 45
+const MAX_EXTRA_HOURS = 300
 
 // =====================================================================
 //  CS BS checklist: TypeScript port of Course_Backend/CPSC_BS.py
@@ -306,6 +312,10 @@ const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padd
 
 const classesKey = (user: ActiveUser) => `classes_${user.uin}`
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
+const toHours = (value: unknown) => {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) ? Math.min(MAX_EXTRA_HOURS, Math.max(0, Math.floor(number))) : 0
+}
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
@@ -370,6 +380,8 @@ export default function App() {
   const [completed, setCompleted] = useState<string[]>([])
   const [customCourses, setCustomCourses] = useState<CustomCourse[]>([])
   const [highImpact, setHighImpact] = useState(false)
+  const [otherTamuHours, setOtherTamuHours] = useState(0) // TAMU hours outside the CS BS checklist (e.g. UCC)
+  const [transferHours, setTransferHours] = useState(0)   // AP / credit by exam / transfer hours
   const [customName, setCustomName] = useState('')
   const [customCredits, setCustomCredits] = useState('3')
   const [formError, setFormError] = useState('')
@@ -393,23 +405,44 @@ export default function App() {
         if (Array.isArray(data.completed)) setCompleted(data.completed)
         if (Array.isArray(data.customCourses)) setCustomCourses(data.customCourses)
         if (typeof data.highImpact === 'boolean') setHighImpact(data.highImpact)
+        setOtherTamuHours(toHours(data.otherTamuHours))
+        setTransferHours(toHours(data.transferHours))
+        // ringHours and requiredCredits are recalculated below, not read back.
       }
     } catch { /* corrupted saved data: start fresh */ }
     setHydrated(true)
   }, [])
 
-  // 2. SAVE to the user-specific key whenever their classes change
+  // 2. Progress is calculated locally from the JSON catalog: no network request
+  const report = useMemo(() => buildReport(completed, customCourses, highImpact), [completed, customCourses, highImpact])
+  const requirements = report.CPSC_BS
+
+  // 3. TAMU credit calculations (Aggie Ring + degree credits)
+  const hours = useMemo(() => {
+    const institutionHours = report.total_credits + otherTamuHours       // earned at Texas A&M (needs 45)
+    const ringHours = institutionHours + transferHours                   // all completed hours (needs 90)
+    const requiredCredits = report.credit_requirements.full_degree_total
+    const degreeEarned = report.degree_credits + otherTamuHours + transferHours
+    return {
+      institutionHours, ringHours, requiredCredits, degreeEarned,
+      ringRemaining: Math.max(0, RING_TOTAL_HOURS - ringHours),
+      residentRemaining: Math.max(0, RING_RESIDENT_HOURS - institutionHours),
+      degreeRemaining: Math.max(0, requiredCredits - degreeEarned),
+      ringHoursMet: ringHours >= RING_TOTAL_HOURS && institutionHours >= RING_RESIDENT_HOURS,
+    }
+  }, [report, otherTamuHours, transferHours])
+
+  // 4. SAVE to the user-specific key whenever their classes or hours change
   useEffect(() => {
     if (!hydrated || !activeUser) return // don't overwrite saved data with empty state before loading
     try {
-      const data: SavedPlanner = { completed, customCourses, highImpact }
+      const data: SavedPlanner = {
+        completed, customCourses, highImpact, otherTamuHours, transferHours,
+        ringHours: hours.ringHours, requiredCredits: hours.requiredCredits,
+      }
       localStorage.setItem(classesKey(activeUser), JSON.stringify(data))
     } catch { /* storage full or unavailable */ }
-  }, [hydrated, activeUser, completed, customCourses, highImpact])
-
-  // 3. Progress is calculated locally from the JSON catalog: no network request
-  const report = useMemo(() => buildReport(completed, customCourses, highImpact), [completed, customCourses, highImpact])
-  const requirements = report.CPSC_BS
+  }, [hydrated, activeUser, completed, customCourses, highImpact, otherTamuHours, transferHours, hours.ringHours, hours.requiredCredits])
 
   const isCompleted = (code: string) => completed.includes(code) || customCourses.some(c => c.completed && customCode(c) === code)
   const toggleCourse = (code: string, checked: boolean) => {
@@ -468,16 +501,30 @@ export default function App() {
   return <main>
     <header className="topbar">
       <div className="brand">
-        <div className="brand__mark" aria-label="App logo placeholder"><span>LOGO</span></div>
+        <div
+          className="brand__mark"
+          style={{ padding: 0, border: 'none', overflow: 'hidden' }}
+        >
+          <img
+            src="/app-logo.png"
+            alt="DO logo"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+            />
+        </div>
         <a className="calendar-link" href="/calendar.html"><CalendarIcon /><span>Calendar</span></a>
       </div>
       <div className="student-metrics" style={{ width: 'auto', minWidth: 0, flex: '1 1 0',
         gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, .85fr) minmax(0, .85fr) minmax(0, .7fr) minmax(0, 1.3fr) minmax(0, 1.3fr)' }}>
         <div className="metric"><span className="metric__label">Student</span><SlidingText>{displayName}</SlidingText><span className="metric__detail">UIN {displayUin}</span></div>
         <div className="metric"><span className="metric__label">Academic year</span><SlidingText>{displayYear}</SlidingText><span className="metric__detail">{displaySemester}</span></div>
-        <div className="metric"><span className="metric__label">Total credits</span><strong>{report.total_credits}</strong><span className="metric__detail">hours completed</span></div>
-        <ProgressMeter label="Aggie Ring" current={student.ringHours} total={90} />
-        <ProgressMeter label="Degree credits" current={report.degree_credits} total={report.credit_requirements.full_degree_total} />
+        <div className="metric"><span className="metric__label">Total credits</span><strong>{hours.ringHours}</strong><span className="metric__detail">hours completed</span></div>
+        <ProgressMeter label="Aggie Ring" current={hours.ringHours} total={RING_TOTAL_HOURS} />
+        <ProgressMeter label="Degree credits" current={hours.degreeEarned} total={hours.requiredCredits} />
       </div>
     </header>
     <section className="page-shell" aria-labelledby="page-title">
@@ -486,6 +533,33 @@ export default function App() {
         <p className="intro__copy">Track completed credit and the requirements still ahead.</p>
       </div>
       {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
+
+      <section aria-label="Credit hours summary" style={{ ...panel, display: 'grid', gap: 16, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+        <div>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Aggie Ring hours</div>
+          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Total completed hours: <strong>{hours.ringHours} / {RING_TOTAL_HOURS}</strong> · {hours.ringRemaining} remaining</p>
+          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Hours earned at Texas A&amp;M: <strong>{hours.institutionHours} / {RING_RESIDENT_HOURS}</strong> · {hours.residentRemaining} remaining</p>
+          <p style={{ margin: '0 0 4px', fontSize: 14 }}>{hours.ringHoursMet ? 'Hour requirements met.' : 'Hour requirements not yet met.'}</p>
+          <p style={{ margin: 0, fontSize: 12 }}>The Ring also requires a 2.0 cumulative GPR and good academic standing, which this planner does not track.</p>
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Degree credits</div>
+          <p style={{ margin: '0 0 4px', fontSize: 14 }}>Credits toward degree: <strong>{hours.degreeEarned} / {hours.requiredCredits}</strong> · {hours.degreeRemaining} remaining</p>
+          <p style={{ margin: 0, fontSize: 12 }}>CS BS major requirements applied: {report.degree_credits} credits. Other hours below are assumed to apply to your degree.</p>
+        </div>
+        <div style={{ gridColumn: '1 / -1', display: 'grid', gap: 8, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
+          <label>TAMU hours outside the checklist (UCC, etc.)
+            <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="number" min="0" max={MAX_EXTRA_HOURS} step="1"
+              placeholder="0" value={otherTamuHours === 0 ? '' : otherTamuHours} onChange={event => setOtherTamuHours(toHours(event.target.value))} />
+          </label>
+          <label>AP / credit by exam / transfer hours
+            <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="number" min="0" max={MAX_EXTRA_HOURS} step="1"
+              placeholder="0" value={transferHours === 0 ? '' : transferHours} onChange={event => setTransferHours(toHours(event.target.value))} />
+          </label>
+          <p style={{ gridColumn: '1 / -1', margin: 0, fontSize: 12 }}>Courses you check below count as Texas A&amp;M hours. If a course was covered by AP, credit by exam or transfer, leave it unchecked and add its hours to the AP / transfer box instead. Those hours count toward the 90 but not the 45.</p>
+        </div>
+      </section>
+
       <div className="requirements-table">
         <section className="requirements-column">
           <div className="column-heading"><span>01</span><h2>AP Credit</h2></div>

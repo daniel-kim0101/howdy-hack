@@ -1,5 +1,8 @@
 {
   "description": "Helps Texas A&M students track Aggie Ring and graduation credit progress alongside AP, major, and university requirement categories.",
+  "icons": {
+    "icon": "/app-logo.png?v=2"
+  },
   "robots": {
     "index": false
   },

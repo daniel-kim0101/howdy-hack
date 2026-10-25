@@ -73,7 +73,16 @@ export default function CalendarApp() {
       <header className="calendar-topbar">
         <div className="brand">
           <a className="brand__mark" href="/degree.html" aria-label="Go to degree planner">
-            <span>LOGO</span>
+            <img
+              src="/app-logo.png"
+              alt="DO logo"
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
           </a>
           <a className="calendar-link" href="/degree.html">
             <DegreeIcon />
