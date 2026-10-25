@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SplashScreen from './SplashScreen'
 
 interface StudentProfile {
   name: string;
@@ -40,6 +41,7 @@ export default function LoginApp() {
 
   return (
     <main className="index-page">
+      <SplashScreen />
       <section className="index-card" aria-labelledby="index-title">
         <div className="brand__mark index-logo" aria-label="App logo placeholder">
           <img
