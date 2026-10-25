@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
           index: path.resolve(__dirname, 'index.html'),
           degree: path.resolve(__dirname, 'degree.html'),
           calendar: path.resolve(__dirname, 'calendar.html'),
+          add: path.resolve(__dirname, 'add.html'),
         },
       },
     },

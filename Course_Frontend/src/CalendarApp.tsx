@@ -1,14 +1,24 @@
-const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const days = Array.from({ length: 35 }, (_, index) => {
-  const day = index - 4
-  return day > 0 && day <= 31 ? day : null
-})
+import { useMemo, useState } from 'react'
 
-function CalendarIcon() {
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
+
+function dateKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function monthValue(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function DegreeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 3v3m10-3v3M4.5 9.5h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z" />
-      <path d="M7.5 13h2m3 0h2m3 0h.5m-10.5 3.5h2m3 0h2" />
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
+      <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h6" />
     </svg>
   )
 }
@@ -21,7 +31,43 @@ function PlusIcon() {
   )
 }
 
+function MonthPickerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 3v3m10-3v3M4.5 9.5h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z" />
+    </svg>
+  )
+}
+
 export default function CalendarApp() {
+  const params = new URLSearchParams(window.location.search)
+  const eventDate = params.get('date') ?? ''
+  const eventTitle = params.get('event') ?? ''
+  const parsedEventDate = /^\d{4}-\d{2}-\d{2}$/.test(eventDate)
+    ? new Date(`${eventDate}T12:00:00`)
+    : null
+  const today = new Date()
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => parsedEventDate ?? new Date(today.getFullYear(), today.getMonth(), 1),
+  )
+
+  const calendarDays = useMemo(() => {
+    const year = visibleMonth.getFullYear()
+    const month = visibleMonth.getMonth()
+    const firstVisible = new Date(year, month, 1 - new Date(year, month, 1).getDay())
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(firstVisible)
+      date.setDate(firstVisible.getDate() + index)
+      return date
+    })
+  }, [visibleMonth])
+
+  const changeMonth = (amount: number) => {
+    setVisibleMonth(
+      (current) => new Date(current.getFullYear(), current.getMonth() + amount, 1),
+    )
+  }
+
   return (
     <main>
       <header className="calendar-topbar">
@@ -29,9 +75,9 @@ export default function CalendarApp() {
           <a className="brand__mark" href="/degree.html" aria-label="Go to degree planner">
             <span>LOGO</span>
           </a>
-          <a className="calendar-link" href="/calendar.html" aria-current="page">
-            <CalendarIcon />
-            <span>Calendar</span>
+          <a className="calendar-link" href="/degree.html">
+            <DegreeIcon />
+            <span>Degree</span>
           </a>
         </div>
 
@@ -48,22 +94,44 @@ export default function CalendarApp() {
           </div>
         </div>
 
-        <button className="add-event-button" type="button">
+        <a className="add-event-button" href="/add.html">
           <PlusIcon />
           Add event
-        </button>
+        </a>
       </header>
 
       <section className="calendar-shell" aria-labelledby="calendar-title">
         <div className="calendar-toolbar">
           <div>
             <p className="eyebrow">Academic schedule</p>
-            <h1 id="calendar-title">March 2025</h1>
+            <div className="calendar-title-row">
+              <h1 id="calendar-title">{monthFormatter.format(visibleMonth)}</h1>
+              <label className="month-picker" aria-label="Choose a month">
+                <MonthPickerIcon />
+                <input
+                  type="month"
+                  value={monthValue(visibleMonth)}
+                  onChange={(event) => {
+                    const [year, month] = event.target.value.split('-').map(Number)
+                    if (year && month) setVisibleMonth(new Date(year, month - 1, 1))
+                  }}
+                />
+              </label>
+            </div>
           </div>
           <div className="month-controls" aria-label="Calendar navigation">
-            <button type="button" aria-label="Previous month">←</button>
-            <button type="button">Today</button>
-            <button type="button" aria-label="Next month">→</button>
+            <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month">
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibleMonth(new Date(today.getFullYear(), today.getMonth(), 1))}
+            >
+              Today
+            </button>
+            <button type="button" onClick={() => changeMonth(1)} aria-label="Next month">
+              →
+            </button>
           </div>
         </div>
 
@@ -74,17 +142,26 @@ export default function CalendarApp() {
             ))}
           </div>
           <div className="month-grid">
-            {days.map((day, index) => (
-              <div
-                className={`calendar-day${day === 18 ? ' calendar-day--today' : ''}`}
-                key={index}
-              >
-                {day && <span className="day-number">{day}</span>}
-                {day === 6 && <span className="event-chip">Advising</span>}
-                {day === 18 && <span className="event-chip event-chip--gold">Registration</span>}
-                {day === 25 && <span className="event-chip">Degree check-in</span>}
-              </div>
-            ))}
+            {calendarDays.map((date) => {
+              const key = dateKey(date)
+              const outsideMonth = date.getMonth() !== visibleMonth.getMonth()
+              const isToday = key === dateKey(today)
+              return (
+                <div
+                  className={[
+                    'calendar-day',
+                    outsideMonth ? 'calendar-day--outside' : '',
+                    isToday ? 'calendar-day--today' : '',
+                  ].join(' ')}
+                  key={key}
+                >
+                  <span className="day-number">{date.getDate()}</span>
+                  {eventTitle && key === eventDate && (
+                    <span className="event-chip">{eventTitle}</span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
