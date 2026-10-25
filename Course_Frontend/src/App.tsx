@@ -1,13 +1,21 @@
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import catalogFile from '../../Course_Data/Major.json/CPSC_BS.json' // copy of Course_Data/Major.json/CPSC_BS.json
 
 type StudentProfile = {
   name: string; uin: string; year: string; semester: string
   ringHours: number; requiredCredits: number
 }
+// Fallback/default values. Name, UIN, year and semester come from the logged-in user when available.
 const student: StudentProfile = {
   name: 'Daniel Kim', uin: '93535', year: 'Freshman', semester: '1st semester',
   ringHours: 33, requiredCredits: 126,
 }
+
+// Shape of the profile object the login screen stores under 'activeLoggedInUser'.
+type ActiveUser = { name: string; uin: string | number; year?: string; sem?: string; semester?: string }
+
+// Everything the planner saves for one student under `classes_${uin}`.
+type SavedPlanner = { completed: string[]; customCourses: CustomCourse[]; highImpact: boolean }
 
 type CourseOption = {
   course_id: string; canonical_id?: string; name?: string; credits: number
@@ -20,19 +28,284 @@ type Requirement = {
   complete: boolean; applied_courses: string[]; allow_custom_courses?: boolean
 }
 type Report = {
-  requirements_list: string; CPSC_BS: Requirement[]
+  CPSC_BS: Requirement[]
   degree_credits: number; total_credits: number; total_credits_complete: boolean
   courses_missing_credit_values: string[]; major_checklist_complete: boolean
   credit_requirements: { full_degree_total: number }
 }
 type CustomCourse = { id: string; name: string; credits: number; completed: boolean }
 
-// No Vite config change is required when using an explicit API URL.
-// Empty value also supports a future /api development proxy.
-const API_BASE = '' // Uses the /api proxy already configured in vite.config.ts.
+// =====================================================================
+//  CS BS checklist: TypeScript port of Course_Backend/CPSC_BS.py
+//  (major-only; UCC, AP, GPA, prerequisites etc. are not evaluated)
+// =====================================================================
+type CatalogEntry = { type?: string; credits: number; elective: 'yes' | 'no'; elective_type?: string }
+const catalog = catalogFile as unknown as Record<string, CatalogEntry>
+
+const COMPLEMENTARY_KEY = 'COMPLEMENTARY_ELECTIVE'
+const UPPER_LEVEL = 'Upper-level Computer Science and Engineering Electives'
+const COMPLEMENTARY = 'Complementary Elective'
+const TARGETS: Record<string, number> = {
+  'Systems Electives': 3,
+  'Software and Languages Electives': 3,
+  'Information and Applications Electives': 3,
+  [UPPER_LEVEL]: 9,
+  'Science Elective': 7,
+  [COMPLEMENTARY]: 9,
+}
+const DEGREE_TOTAL_CREDITS = 126
+
+/** CSCE 120, csce120 -> CSCE120; known cross-listings share one ID. */
+function normalize(code: string, aliasMap: Record<string, string> = {}) {
+  const cleaned = code.replace(/\s+/g, '').toUpperCase()
+  if (!/^[A-Z]+[0-9]{3}$/.test(cleaned)) throw new Error(`Use one actual course code, not a group: ${cleaned}`)
+  return aliasMap[cleaned] ?? cleaned
+}
+const stripRaw = (code: string) => code.replace(/ /g, '').toUpperCase()
+
+// Cross-listed pairs come from two-code upper-level entries (same convention as the Python).
+const aliases: Record<string, string> = {}
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.elective === 'yes' && info.elective_type === UPPER_LEVEL) {
+    const codes = key.split('/')
+    if (codes.length === 2) {
+      const first = normalize(codes[0])
+      for (const code of codes) aliases[normalize(code)] = first
+    }
+  }
+}
+
+// Parse the catalog once: required courses, choice groups, credits, elective buckets.
+const baseCredits = new Map<string, number>()
+const requiredCodes: string[] = []
+const choiceGroups: { label: string; codes: string[] }[] = []
+const eligibleBuckets: Record<string, Set<string>> = {}
+for (const name of Object.keys(TARGETS)) eligibleBuckets[name] = new Set()
+for (const [key, info] of Object.entries(catalog)) {
+  if (key === COMPLEMENTARY_KEY) continue // a requirement, not a nine-credit course
+  const codes = [...new Set(key.split('/').map(c => normalize(c, aliases)))].sort()
+  for (const code of codes) baseCredits.set(code, info.credits)
+  if (info.elective === 'no') {
+    if (codes.length === 1) requiredCodes.push(codes[0])
+    else choiceGroups.push({ label: key, codes })
+  } else {
+    const bucket = eligibleBuckets[info.elective_type ?? '']
+    if (!bucket) throw new Error(`Unknown elective type for ${key}: ${info.elective_type}`)
+    for (const code of codes) bucket.add(code)
+  }
+}
+const requiredSorted = [...new Set(requiredCodes)].sort()
+
+const experienceCourses = new Set<string>()
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.type === 'High-Impact Experience' && info.elective === 'no') {
+    for (const c of key.split('/')) experienceCourses.add(normalize(c, aliases))
+  }
+}
+
+// Raw (as written in the JSON) course codes shown on each requirement card.
+const requiredRawOptions = new Map<string, Set<string>>()
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.elective !== 'no') continue
+  const raw = key.split('/')
+  const normalized = raw.map(c => normalize(c, aliases))
+  if (new Set(normalized).size === 1) {
+    const set = requiredRawOptions.get(normalized[0]) ?? new Set<string>()
+    raw.forEach(c => set.add(stripRaw(c)))
+    requiredRawOptions.set(normalized[0], set)
+  }
+}
+const electiveRawOptions: Record<string, Set<string>> = {}
+for (const name of Object.keys(TARGETS)) electiveRawOptions[name] = new Set()
+for (const [key, info] of Object.entries(catalog)) {
+  if (key === COMPLEMENTARY_KEY || !info.elective_type || !electiveRawOptions[info.elective_type]) continue
+  key.split('/').forEach(c => electiveRawOptions[info.elective_type!].add(stripRaw(c)))
+}
+
+const customCode = (course: { name: string }) => {
+  const value = course.name.replace(/\s+/g, '').toUpperCase()
+  return /^[A-Z]+[0-9]{3}$/.test(value) ? normalize(value, aliases) : null
+}
+const customId = (name: string) => {
+  try { return normalize(name, aliases) } catch {
+    return 'CUSTOM:' + name.toLowerCase().split(/\s+/).filter(Boolean).join(' ')
+  }
+}
+
+type ElectiveResult = { required_credits: number; earned_credits: number; remaining_credits: number; complete: boolean; applied_courses: string[] }
+type Cell = { cost: number; assignments: [string, string][] }
+
+// Python compares (cost, assignments) tuples; this does the same.
+function compareCells(a: Cell, b: Cell) {
+  if (a.cost !== b.cost) return a.cost - b.cost
+  const shared = Math.min(a.assignments.length, b.assignments.length)
+  for (let i = 0; i < shared; i++) {
+    for (let j = 0; j < 2; j++) {
+      const x = a.assignments[i][j], y = b.assignments[i][j]
+      if (x !== y) return x < y ? -1 : 1
+    }
+  }
+  return a.assignments.length - b.assignments.length
+}
+
+/** Exact capped-state DP: each course is used at most once across buckets. */
+function allocate(candidates: Set<string>, eligible: Record<string, Set<string>>, credits: Map<string, number>) {
+  const names = Object.keys(eligible)
+  const targets = names.map(name => TARGETS[name])
+  const zero = targets.map(() => 0)
+  let states = new Map<string, { state: number[]; cell: Cell }>([[zero.join(','), { state: zero, cell: { cost: 0, assignments: [] } }]])
+  for (const code of [...candidates].sort()) {
+    const hours = credits.get(code) ?? 0
+    if (!hours) continue
+    const updates = new Map(states)
+    for (const { state, cell } of states.values()) {
+      names.forEach((name, i) => {
+        if (!eligible[name].has(code) || state[i] >= targets[i]) return
+        const next = [...state]
+        next[i] = Math.min(targets[i], state[i] + hours)
+        const proposal: Cell = { cost: cell.cost + hours, assignments: [...cell.assignments, [code, name]] }
+        const key = next.join(',')
+        const old = updates.get(key)
+        if (!old || compareCells(proposal, old.cell) < 0) updates.set(key, { state: next, cell: proposal })
+      })
+    }
+    states = updates
+  }
+  // Prefer most completed buckets, then most covered credits, then least credit used.
+  let bestKey = zero.join(',')
+  let bestScore: number[] | null = null
+  for (const [key, { state, cell }] of states) {
+    const score = [state.filter((value, i) => value === targets[i]).length, state.reduce((a, b) => a + b, 0), -cell.cost]
+    const better = !bestScore || score[0] > bestScore[0]
+      || (score[0] === bestScore[0] && (score[1] > bestScore[1] || (score[1] === bestScore[1] && score[2] > bestScore[2])))
+    if (better) { bestScore = score; bestKey = key }
+  }
+  const best = states.get(bestKey)!
+  const result: Record<string, ElectiveResult> = {}
+  names.forEach((name, i) => {
+    const selected = best.cell.assignments.filter(([, bucket]) => bucket === name).map(([code]) => code)
+    result[name] = {
+      required_credits: targets[i],
+      earned_credits: selected.reduce((sum, code) => sum + (credits.get(code) ?? 0), 0),
+      remaining_credits: targets[i] - best.state[i],
+      complete: best.state[i] === targets[i],
+      applied_courses: selected,
+    }
+  })
+  return result
+}
+
+function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean): Report {
+  const credits = new Map(baseCredits)
+  const completed = new Set<string>()
+  for (const raw of completedCourses) {
+    try { completed.add(normalize(raw, aliases)) } catch { /* ignore invalid saved codes */ }
+  }
+  // A known course checked in the custom list must update shared completion first.
+  for (const record of complementary) if (record.completed) completed.add(customId(record.name))
+
+  const applied = new Set<string>()
+  const requiredResults = requiredSorted.map(code => {
+    const done = experienceCourses.has(code) ? highImpact : completed.has(code)
+    if (done) applied.add(code)
+    return { course_id: code, complete: done }
+  })
+
+  const choiceResults = choiceGroups.map(({ label, codes }) => {
+    const available = codes.filter(c => completed.has(c) && !applied.has(c))
+      .sort((a, b) => (credits.get(a)! - credits.get(b)!) || (a < b ? -1 : a > b ? 1 : 0))
+    const selected = available.slice(0, 1)
+    selected.forEach(c => applied.add(c))
+    return { label, selected, required: Math.min(...codes.map(c => credits.get(c) ?? 0)) }
+  })
+
+  // Student-entered complementary courses (catalog credits win for known course codes).
+  const complementaryIds = new Set<string>()
+  const customList: { course_id: string; name: string; credits: number; completed: boolean }[] = []
+  const seen = new Set<string>()
+  for (const record of complementary) {
+    const name = record.name.trim()
+    const hours = record.credits
+    if (!name || !Number.isInteger(hours) || hours <= 0) continue
+    const code = customId(name)
+    if (seen.has(code)) continue
+    seen.add(code)
+    if (record.completed) completed.add(code)
+    if (!credits.has(code)) credits.set(code, hours)
+    complementaryIds.add(code)
+    customList.push({ course_id: code, name, credits: hours, completed: completed.has(code) })
+  }
+
+  // Allocate ALL elective buckets together to prevent cross-bucket reuse.
+  const allEligible: Record<string, Set<string>> = { ...eligibleBuckets, [COMPLEMENTARY]: complementaryIds }
+  const candidates = new Set<string>()
+  for (const bucket of Object.values(allEligible)) for (const code of bucket) if (completed.has(code) && !applied.has(code)) candidates.add(code)
+  const electives = allocate(candidates, allEligible, credits)
+  for (const result of Object.values(electives)) result.applied_courses.forEach(c => applied.add(c))
+
+  const optionsFor = (rawCodes: Iterable<string>, selected: Set<string>): CourseOption[] =>
+    [...new Set(rawCodes)].sort().map(raw => {
+      const code = normalize(raw, aliases)
+      return { course_id: raw, canonical_id: code, credits: credits.get(code) ?? 0, completed: completed.has(code), applied_here: selected.has(code) }
+    })
+
+  const cards: Requirement[] = []
+  for (const item of requiredResults) {
+    const code = item.course_id
+    const rawOptions = requiredRawOptions.get(code) ?? new Set([code])
+    const hours = credits.get(code) ?? 0
+    cards.push({
+      id: code, kind: experienceCourses.has(code) ? 'experience' : 'required',
+      show_dropdown: rawOptions.size > 1, multiple: true,
+      required_credits: hours, earned_credits: item.complete ? hours : 0,
+      remaining_credits: item.complete ? 0 : hours, complete: item.complete,
+      applied_courses: item.complete ? [code] : [],
+      options: optionsFor(rawOptions, item.complete ? new Set([code]) : new Set()),
+    })
+  }
+  for (const item of choiceResults) {
+    const rawOptions = item.label.split('/')
+    const earned = item.selected.reduce((sum, c) => sum + (credits.get(c) ?? 0), 0)
+    cards.push({
+      id: item.label, kind: 'choose_one', show_dropdown: new Set(rawOptions).size > 1, multiple: true,
+      required_credits: item.required, earned_credits: earned,
+      remaining_credits: Math.max(0, item.required - earned), complete: item.selected.length > 0,
+      applied_courses: item.selected, options: optionsFor(rawOptions, new Set(item.selected)),
+    })
+  }
+  for (const [name, result] of Object.entries(electives)) {
+    const isCustom = name === COMPLEMENTARY
+    cards.push({
+      id: name, kind: 'elective', show_dropdown: true, multiple: true, ...result,
+      allow_custom_courses: isCustom,
+      options: isCustom
+        ? customList.map(course => ({ ...course, applied_here: result.applied_courses.includes(course.course_id) }))
+        : optionsFor(electiveRawOptions[name], new Set(result.applied_courses)),
+    })
+  }
+
+  const unknown = [...completed].filter(code => !credits.has(code)).sort()
+  const sumCredits = (codes: Iterable<string>) => { let total = 0; for (const c of codes) total += credits.get(c) ?? 0; return total }
+  return {
+    CPSC_BS: cards,
+    degree_credits: sumCredits(applied),
+    total_credits: sumCredits([...completed].filter(code => credits.has(code))),
+    total_credits_complete: unknown.length === 0,
+    courses_missing_credit_values: unknown,
+    major_checklist_complete: requiredResults.every(r => r.complete) && choiceResults.every(r => r.selected.length > 0)
+      && Object.values(electives).every(r => r.complete),
+    credit_requirements: { full_degree_total: DEGREE_TOTAL_CREDITS },
+  }
+}
+
+// =====================================================================
+
 const panel: CSSProperties = { border: '1px solid #ddd6ce', borderRadius: 8, padding: 12, marginBottom: 12 }
 const control: CSSProperties = { padding: '7px 9px', border: '1px solid #bdb5ad', borderRadius: 5, minWidth: 0 }
 const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }
+
+const classesKey = (user: ActiveUser) => `classes_${user.uin}`
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
@@ -92,61 +365,52 @@ function CalendarIcon() {
 
 export default function App() {
   const isMobile = useMediaQuery('(max-width: 800px)')
+  const [activeUser, setActiveUser] = useState<ActiveUser | null>(null)
+  const [hydrated, setHydrated] = useState(false) // true once saved classes have been loaded for the active user
   const [completed, setCompleted] = useState<string[]>([])
   const [customCourses, setCustomCourses] = useState<CustomCourse[]>([])
   const [highImpact, setHighImpact] = useState(false)
-  const [report, setReport] = useState<Report | null>(null)
-  const [busy, setBusy] = useState(true)
-  const [error, setError] = useState('')
-  const [retry, setRetry] = useState(0)
   const [customName, setCustomName] = useState('')
   const [customCredits, setCustomCredits] = useState('3')
   const [formError, setFormError] = useState('')
 
+  // 1. LOAD ACTIVE SESSION + this user's saved classes
   useEffect(() => {
-    const controller = new AbortController()
-    const load = async () => {
-      setBusy(true); setError('')
-      try {
-        const isEmpty = !completed.length && !customCourses.length && !highImpact
-        const response = await fetch(`${API_BASE}/api/cpsc-bs/${isEmpty ? 'requirements' : 'check'}`, {
-          method: isEmpty ? 'GET' : 'POST', signal: controller.signal,
-          ...(isEmpty ? {} : {
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ completed_courses: completed, high_impact_confirmed: highImpact,
-              complementary_courses: customCourses.map(({ name, credits, completed: checked }) => ({ name, credits, completed: checked })) }),
-          }),
-        })
-        const contentType = response.headers.get('content-type') ?? ''
-        if (!contentType.includes('application/json')) throw new Error('API did not return JSON. Check VITE_API_BASE_URL and restart the frontend.')
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.error ?? `API error ${response.status}`)
-        if (!Array.isArray(data.CPSC_BS)) throw new Error('API response does not contain the CPSC_BS requirement list.')
-        if (!controller.signal.aborted) setReport(data as Report)
-      } catch (err) {
-        if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Unable to connect to the API.')
-      } finally {
-        if (!controller.signal.aborted) setBusy(false)
-      }
-    }
-    void load()
-    return () => controller.abort()
-  }, [completed, customCourses, highImpact, retry])
+    let user: ActiveUser | null = null
+    try {
+      const raw = localStorage.getItem('activeLoggedInUser')
+      const parsed = raw ? JSON.parse(raw) : null
+      if (parsed && typeof parsed === 'object' && parsed.uin !== undefined && parsed.uin !== null && parsed.uin !== '') user = parsed as ActiveUser
+    } catch { user = null }
 
-  const requirements = report?.CPSC_BS ?? []
-  const canonical = (value: string) => {
-    const cleaned = value.replace(/\s+/g, '').toUpperCase()
-    for (const requirement of requirements) {
-      if (requirement.allow_custom_courses) continue
-      const option = requirement.options.find(o => o.course_id === cleaned)
-      if (option) return option.canonical_id ?? option.course_id
-    }
-    return cleaned
-  }
-  const customCode = (course: CustomCourse) => {
-    const value = course.name.replace(/\s+/g, '').toUpperCase()
-    return /^[A-Z]+\d{3}$/.test(value) ? canonical(value) : null
-  }
+    if (!user) { window.location.href = '/index.html'; return }
+    setActiveUser(user)
+
+    try {
+      const saved = localStorage.getItem(classesKey(user))
+      if (saved) {
+        const data = JSON.parse(saved) as Partial<SavedPlanner>
+        if (Array.isArray(data.completed)) setCompleted(data.completed)
+        if (Array.isArray(data.customCourses)) setCustomCourses(data.customCourses)
+        if (typeof data.highImpact === 'boolean') setHighImpact(data.highImpact)
+      }
+    } catch { /* corrupted saved data: start fresh */ }
+    setHydrated(true)
+  }, [])
+
+  // 2. SAVE to the user-specific key whenever their classes change
+  useEffect(() => {
+    if (!hydrated || !activeUser) return // don't overwrite saved data with empty state before loading
+    try {
+      const data: SavedPlanner = { completed, customCourses, highImpact }
+      localStorage.setItem(classesKey(activeUser), JSON.stringify(data))
+    } catch { /* storage full or unavailable */ }
+  }, [hydrated, activeUser, completed, customCourses, highImpact])
+
+  // 3. Progress is calculated locally from the JSON catalog: no network request
+  const report = useMemo(() => buildReport(completed, customCourses, highImpact), [completed, customCourses, highImpact])
+  const requirements = report.CPSC_BS
+
   const isCompleted = (code: string) => completed.includes(code) || customCourses.some(c => c.completed && customCode(c) === code)
   const toggleCourse = (code: string, checked: boolean) => {
     setCompleted(previous => checked ? [...new Set([...previous, code])] : previous.filter(c => c !== code))
@@ -162,18 +426,22 @@ export default function App() {
     // course still checked in a standard requirement remains completed.
     setCustomCourses(previous => previous.filter(c => c.id !== course.id))
     const code = customCode(course)
-    const existsInCatalog = code && requirements.some(r => !r.allow_custom_courses && r.options.some(o => (o.canonical_id ?? o.course_id) === code))
-    if (code && !existsInCatalog) setCompleted(previous => previous.filter(c => c !== code))
+    if (code && !baseCredits.has(code)) setCompleted(previous => previous.filter(c => c !== code))
   }
   const addCustom = (event: FormEvent) => {
     event.preventDefault()
     const name = customName.trim(); const credits = Number(customCredits)
     if (!name || !Number.isInteger(credits) || credits < 1) { setFormError('Enter a course name and positive whole-number credits.'); return }
     const identity = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ')
-    const proposedCode = customCode({ id: '', name, credits, completed: false })
+    const proposedCode = customCode({ name })
     if (customCourses.some(c => identity(c.name) === identity(name) || (proposedCode && customCode(c) === proposedCode))) {
       setFormError('This course is already in your list.'); return
     }
+    const known = proposedCode ? baseCredits.get(proposedCode) : undefined
+    if (known !== undefined && known !== credits) {
+      setFormError(`${proposedCode} is worth ${known} credits in the catalog. Use that value.`); return
+    }
+    // Appending updates state; the save effect above writes it to `classes_${activeUser.uin}`.
     setCustomCourses(previous => [...previous, { id: crypto.randomUUID(), name, credits, completed: proposedCode ? isCompleted(proposedCode) : false }])
     setCustomName(''); setCustomCredits('3'); setFormError('')
   }
@@ -184,10 +452,18 @@ export default function App() {
       return <label key={option.course_id} style={row}>
         <input type="checkbox" checked={isCompleted(code)} onChange={event => toggleCourse(code, event.target.checked)} />
         <span>{option.course_id} <small>({option.credits} cr)</small></span>
-        {option.applied_here && !busy && !error && <small style={{ marginLeft: 'auto' }}>Applied here</small>}
+        {option.applied_here && <small style={{ marginLeft: 'auto' }}>Applied here</small>}
       </label>
     })}
   </div>
+
+  // Nothing to show until a session is found (the redirect is already in flight otherwise).
+  if (!activeUser) return null
+
+  const displayName = activeUser.name || student.name
+  const displayUin = String(activeUser.uin)
+  const displayYear = activeUser.year ? capitalize(activeUser.year) : student.year
+  const displaySemester = activeUser.sem ? `Semester ${activeUser.sem}` : activeUser.semester || student.semester
 
   return <main>
     <header className="topbar">
@@ -195,13 +471,13 @@ export default function App() {
         <div className="brand__mark" aria-label="App logo placeholder"><span>LOGO</span></div>
         <a className="calendar-link" href="/calendar.html"><CalendarIcon /><span>Calendar</span></a>
       </div>
-      <div className="student-metrics" aria-busy={busy} style={{ width: 'auto', minWidth: 0, flex: '1 1 0',
+      <div className="student-metrics" style={{ width: 'auto', minWidth: 0, flex: '1 1 0',
         gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, .85fr) minmax(0, .85fr) minmax(0, .7fr) minmax(0, 1.3fr) minmax(0, 1.3fr)' }}>
-        <div className="metric"><span className="metric__label">Student</span><SlidingText>{student.name}</SlidingText><span className="metric__detail">UIN {student.uin}</span></div>
-        <div className="metric"><span className="metric__label">Academic year</span><SlidingText>{student.year}</SlidingText><span className="metric__detail">{student.semester}</span></div>
-        <div className="metric"><span className="metric__label">Total credits</span><strong>{report ? report.total_credits : '—'}</strong><span className="metric__detail">hours completed</span></div>
+        <div className="metric"><span className="metric__label">Student</span><SlidingText>{displayName}</SlidingText><span className="metric__detail">UIN {displayUin}</span></div>
+        <div className="metric"><span className="metric__label">Academic year</span><SlidingText>{displayYear}</SlidingText><span className="metric__detail">{displaySemester}</span></div>
+        <div className="metric"><span className="metric__label">Total credits</span><strong>{report.total_credits}</strong><span className="metric__detail">hours completed</span></div>
         <ProgressMeter label="Aggie Ring" current={student.ringHours} total={90} />
-        <ProgressMeter label="Degree credits" current={report?.degree_credits ?? 0} total={report?.credit_requirements.full_degree_total ?? student.requiredCredits} />
+        <ProgressMeter label="Degree credits" current={report.degree_credits} total={report.credit_requirements.full_degree_total} />
       </div>
     </header>
     <section className="page-shell" aria-labelledby="page-title">
@@ -209,9 +485,7 @@ export default function App() {
         <div><p className="eyebrow">Degree planner</p><h1 id="page-title">Your degree at a glance</h1></div>
         <p className="intro__copy">Track completed credit and the requirements still ahead.</p>
       </div>
-      <p role="status" aria-live="polite">{busy ? 'Updating CS BS progress…' : error ? 'Progress could not be updated.' : 'CS BS progress updated.'}</p>
-      {error && <div role="alert" style={panel}><p>{error}</p><button type="button" style={control} onClick={() => setRetry(n => n + 1)}>Retry</button></div>}
-      {report && !report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
+      {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
       <div className="requirements-table">
         <section className="requirements-column">
           <div className="column-heading"><span>01</span><h2>AP Credit</h2></div>
@@ -220,7 +494,7 @@ export default function App() {
         <section className="requirements-column">
           <div className="column-heading"><span>02</span><h2>Degree (Major)</h2></div>
           <p style={{ padding: '0 12px', fontSize: 13 }}>CS BS · Major requirements only. Check courses you have completed. UCC and first-year requirements are not included yet.</p>
-          {report && <p style={{ padding: '0 12px' }}>{report.major_checklist_complete ? 'Major checklist complete' : 'Major checklist in progress'}</p>}
+          <p style={{ padding: '0 12px' }}>{report.major_checklist_complete ? 'Major checklist complete' : 'Major checklist in progress'}</p>
           <ul aria-label="CS BS requirements" style={{ listStyle: 'none', margin: 0, padding: 12 }}>
             {requirements.map(requirement => <li key={requirement.id} style={panel}>
               <h3 style={{ fontSize: 15, margin: '0 0 6px', overflowWrap: 'anywhere' }}>{requirement.id}</h3>

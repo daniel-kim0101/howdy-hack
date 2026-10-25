@@ -7,6 +7,28 @@ interface StudentProfile {
     sem: string;
 }
 
+// Same shape the Degree Planner loads/saves under `classes_${uin}`
+interface SavedPlanner {
+    completed: string[];
+    customCourses: { id: string; name: string; credits: number; completed: boolean }[];
+    highImpact: boolean;
+}
+
+// Set to true to also download a real "<UIN>.json" file to the user's computer on signup.
+const DOWNLOAD_JSON_FILE = false;
+
+const downloadJson = (filename: string, data: unknown) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+};
+
 export default function ProfileApp() {
     const [newName, setNewName] = useState("");
     const [newUIN, setNewUIN] = useState("");
@@ -38,8 +60,13 @@ export default function ProfileApp() {
         };
 
         // 2. Fetch existing database array or create an empty one if new
-        const existingUsersRaw = localStorage.getItem('hackathon_accounts_db');
-        const accountsDatabase = existingUsersRaw ? JSON.parse(existingUsersRaw) : [];
+        let accountsDatabase: StudentProfile[] = [];
+        try {
+            const existingUsersRaw = localStorage.getItem('hackathon_accounts_db');
+            accountsDatabase = existingUsersRaw ? JSON.parse(existingUsersRaw) : [];
+        } catch {
+            accountsDatabase = [];
+        }
 
         // 3. Double-check if this UIN has already registered
         const uinExists = accountsDatabase.some((user: StudentProfile) => user.uin === newUIN);
@@ -52,7 +79,21 @@ export default function ProfileApp() {
         accountsDatabase.push(profileData);
         localStorage.setItem('hackathon_accounts_db', JSON.stringify(accountsDatabase));
 
-        // 5. Automatically mark this user as the active login session
+        // 5. Create this user's own JSON records (their "UIN.json" equivalents)
+        //    profile_<UIN>  -> their profile object
+        //    classes_<UIN>  -> their Degree Planner data (only created if it doesn't exist yet)
+        localStorage.setItem(`profile_${newUIN}`, JSON.stringify(profileData));
+        if (localStorage.getItem(`classes_${newUIN}`) === null) {
+            const emptyPlanner: SavedPlanner = { completed: [], customCourses: [], highImpact: false };
+            localStorage.setItem(`classes_${newUIN}`, JSON.stringify(emptyPlanner));
+        }
+
+        // Optional: also download a real file named "<UIN>.json"
+        if (DOWNLOAD_JSON_FILE) {
+            downloadJson(`${newUIN}.json`, profileData);
+        }
+
+        // 6. Automatically mark this user as the active login session
         localStorage.setItem('activeLoggedInUser', JSON.stringify(profileData));
 
         alert(`Account created successfully for ${newName}! Redirecting...`);
