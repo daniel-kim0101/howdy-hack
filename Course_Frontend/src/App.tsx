@@ -1,4 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from 'react'
+import catalogFile from '../../Course_Data/Major.json/CPSC_BS.json' // copy of Course_Data/Major.json/CPSC_BS.json
+import uccFile from '../../Course_Data/UCC.json'
+import apFile from '../../Course_Data/AP.json'
+import {
+  AP_SCORES, DEFAULT_UCC_TARGETS, evaluateAp, evaluateUcc, parseAp, parseUcc,
+  type UccCategoryResult,
+} from './creditSources'
+import etamFile from '../../Course_Data/ETAM.json'
 
 type StudentProfile = {
   name: string
@@ -8,16 +24,7 @@ type StudentProfile = {
   semester: string
 }
 
-type ActiveUser = {
-  name?: string
-  uin?: string | number
-  major?: string
-  year?: string
-  sem?: string | number
-  semester?: string
-}
-
-const fallbackStudent: StudentProfile = {
+const student: StudentProfile = {
   name: 'Daniel Kim',
   uin: '93535',
   major: 'CPSC_BS',
@@ -25,232 +32,1095 @@ const fallbackStudent: StudentProfile = {
   semester: '1st semester',
 }
 
-const formatMajor = (major: string) => major.replace(/_/g, ' ')
-const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
-
-const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const months = Array.from({ length: 12 }, (_, month) =>
-  new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2025, month, 1)),
-)
-const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
-
-function dateKey(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+type ActiveUser = {
+  name: string
+  uin: string | number
+  major?: string
+  year?: string
+  sem?: string
+  semester?: string
 }
 
-function DegreeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-      <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h6" />
-    </svg>
-  )
+// Everything the planner saves for one student under `classes_${uin}`.
+// otherTamuHours / transferHours are inputs; ringHours / requiredCredits are calculated and saved for convenience.
+// apScores maps an AP exam_id from AP.json to the score earned; apAlternates lists exam_ids using the "alternative" award.
+type SavedPlanner = {
+  completed: string[]; customCourses: CustomCourse[]; highImpact: boolean
+  otherTamuHours: number; transferHours: number; ringHours: number; requiredCredits: number
+  apScores: Record<string, number>; apAlternates: string[]
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  )
+type CourseOption = {
+  course_id: string; canonical_id?: string; name?: string; credits: number
+  completed: boolean; applied_here: boolean
 }
-
-function MonthPickerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 3v3m10-3v3M4.5 9.5h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z" />
-    </svg>
-  )
+type Requirement = {
+  id: string; kind: 'required' | 'choose_one' | 'elective' | 'experience'
+  show_dropdown: boolean; multiple: boolean; options: CourseOption[]
+  required_credits: number; earned_credits: number; remaining_credits: number
+  complete: boolean; applied_courses: string[]; allow_custom_courses?: boolean
 }
+type Report = {
+  CPSC_BS: Requirement[]
+  degree_credits: number; total_credits: number; total_credits_complete: boolean
+  courses_missing_credit_values: string[]; major_checklist_complete: boolean
+  applied_codes: string[] // every course applied to the major checklist or UCC (each counted once)
+  credit_requirements: { full_degree_total: number }
+}
+type CustomCourse = { id: string; name: string; credits: number; completed: boolean }
 
-export default function CalendarApp() {
-  const [student, setStudent] = useState(fallbackStudent)
-  const params = new URLSearchParams(window.location.search)
-  const eventDate = params.get('date') ?? ''
-  const eventTitle = params.get('event') ?? ''
-  const parsedEventDate = /^\d{4}-\d{2}-\d{2}$/.test(eventDate)
-    ? new Date(`${eventDate}T12:00:00`)
-    : null
-  const today = new Date()
-  const [focusedDate, setFocusedDate] = useState(() => parsedEventDate ?? today)
-  const [pickerOpen, setPickerOpen] = useState(false)
-  const [pickerYear, setPickerYear] = useState(() => (parsedEventDate ?? today).getFullYear())
+// ---------- Texas A&M credit rules ----------
+// Aggie Ring (undergraduate): 90 total completed hours, 45 of them earned at Texas A&M.
+// Credit by exam (AP) and transfer hours count toward the 90 but NOT toward the 45.
+// The Ring also needs a 2.0 cumulative GPR and good standing, which this planner does not track.
+const RING_TOTAL_HOURS = 90
+const RING_RESIDENT_HOURS = 45
+const MAX_EXTRA_HOURS = 300
 
-  useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem('activeLoggedInUser')
-      if (!savedUser) return
+// =====================================================================
+//  CS BS checklist: TypeScript port of Course_Backend/CPSC_BS.py
+//  (major-only; UCC, AP, GPA, prerequisites etc. are not evaluated)
+// =====================================================================
+type CatalogEntry = { type?: string; credits: number; elective: 'yes' | 'no'; elective_type?: string }
+const catalog = catalogFile as unknown as Record<string, CatalogEntry>
 
-      const activeUser = JSON.parse(savedUser) as ActiveUser
-      setStudent((current) => ({
-        name: activeUser.name || current.name,
-        uin:
-          activeUser.uin === undefined || activeUser.uin === null
-            ? current.uin
-            : String(activeUser.uin),
-        major: activeUser.major || current.major,
-        year: activeUser.year ? capitalize(activeUser.year) : current.year,
-        semester:
-          activeUser.sem !== undefined && activeUser.sem !== ''
-            ? `Semester ${activeUser.sem}`
-            : activeUser.semester || current.semester,
-      }))
-    } catch {
-      // Keep fallback values if the saved profile is missing or invalid.
+const COMPLEMENTARY_KEY = 'COMPLEMENTARY_ELECTIVE'
+const UPPER_LEVEL = 'Upper-level Computer Science and Engineering Electives'
+const COMPLEMENTARY = 'Complementary Elective'
+const TARGETS: Record<string, number> = {
+  'Systems Electives': 3,
+  'Software and Languages Electives': 3,
+  'Information and Applications Electives': 3,
+  [UPPER_LEVEL]: 9,
+  'Science Elective': 7,
+  [COMPLEMENTARY]: 9,
+}
+const DEGREE_TOTAL_CREDITS = 126
+
+// =====================================================================
+//  Per-major settings for the AP / UCC columns.
+//  creditSources.ts is major-agnostic; a new major only needs its own copy of this block.
+//  uccTargets keys must match the "type" values in UCC.json (SCH required per category).
+// =====================================================================
+const MAJOR_CONFIG = {
+  uccTargets: { ...DEFAULT_UCC_TARGETS } as Record<string, number>,
+}
+const uccTable = parseUcc(uccFile as unknown)
+const apTable = parseAp(apFile as unknown)
+
+/** CSCE 120, csce120 -> CSCE120; known cross-listings share one ID. */
+function normalize(code: string, aliasMap: Record<string, string> = {}) {
+  const cleaned = code.replace(/\s+/g, '').toUpperCase()
+  if (!/^[A-Z]+[0-9]{3}$/.test(cleaned)) throw new Error(`Use one actual course code, not a group: ${cleaned}`)
+  let canonical = cleaned
+  const visited = new Set<string>()
+  while (aliasMap[canonical] && !visited.has(canonical)) {
+    visited.add(canonical)
+    canonical = aliasMap[canonical]
+  }
+  return canonical
+}
+const stripRaw = (code: string) => code.replace(/ /g, '').toUpperCase()
+
+// Cross-listed pairs come from two-code upper-level entries (same convention as the Python).
+const aliases: Record<string, string> = {}
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.elective === 'yes' && info.elective_type === UPPER_LEVEL) {
+    const codes = key.split('/')
+    if (codes.length === 2) {
+      const first = normalize(codes[0])
+      for (const code of codes) aliases[normalize(code)] = first
     }
-  }, [])
+  }
+}
 
-  const calendarDays = useMemo(() => {
-    const weekStart = new Date(focusedDate)
-    weekStart.setDate(focusedDate.getDate() - focusedDate.getDay())
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(weekStart)
-      date.setDate(weekStart.getDate() + index)
-      return date
+// UCC.json cross-listings (ARSC105/CHEM105, ...) share one ID everywhere, same as the major's.
+for (const [code, root] of Object.entries(uccTable.aliases)) if (!(code in aliases)) aliases[code] = root
+
+// Parse the catalog once: required courses, choice groups, credits, elective buckets.
+const baseCredits = new Map<string, number>()
+const requiredCodes: string[] = []
+const choiceGroups: { label: string; codes: string[] }[] = []
+const eligibleBuckets: Record<string, Set<string>> = {}
+for (const name of Object.keys(TARGETS)) eligibleBuckets[name] = new Set()
+for (const [key, info] of Object.entries(catalog)) {
+  if (key === COMPLEMENTARY_KEY) continue // a requirement, not a nine-credit course
+  const codes = [...new Set(key.split('/').map(c => normalize(c, aliases)))].sort()
+  for (const code of codes) baseCredits.set(code, info.credits)
+  if (info.elective === 'no') {
+    if (codes.length === 1) requiredCodes.push(codes[0])
+    else choiceGroups.push({ label: key, codes })
+  } else {
+    const bucket = eligibleBuckets[info.elective_type ?? '']
+    if (!bucket) throw new Error(`Unknown elective type for ${key}: ${info.elective_type}`)
+    for (const code of codes) bucket.add(code)
+  }
+}
+const requiredSorted = [...new Set(requiredCodes)].sort()
+
+/** Credits for any known course: the major's catalog first, then UCC.json. */
+const uccCredits = new Map<string, number>()
+for (const [raw, hours] of uccTable.credits) uccCredits.set(normalize(raw, aliases), hours)
+type EtamEntry = {
+  type: string
+  credits: number
+}
+
+const etamCatalog = etamFile as Record<string, EtamEntry>
+
+const etamGroups = [
+  { type: 'ETAM Engineering', label: 'Engineering' },
+  { type: 'ETAM Science', label: 'Science' },
+  { type: 'ETAM Math', label: 'Math' },
+].map(group => ({
+  ...group,
+  courses: Object.entries(etamCatalog)
+    .filter(([, entry]) => entry.type === group.type)
+    .map(([label, entry]) => ({
+      label,
+      credits: entry.credits,
+      // "/" means equivalent alternatives; "&" requires both courses.
+      alternatives: label.split('/').map(option =>
+        option.split('&').map(code => normalize(code, aliases))
+      ),
+    })),
+}))
+
+// Add credit values for ETAM courses absent from the major/UCC catalogs.
+// CHEM107 + CHEM117 is a combined four-credit option.
+const etamCredits = new Map<string, number>()
+
+for (const group of etamGroups) {
+  for (const course of group.courses) {
+    for (const alternative of course.alternatives) {
+      for (const code of alternative) {
+        const credits = alternative.length === 2 && alternative.includes('CHEM107') && alternative.includes('CHEM117')
+          ? (code === 'CHEM107' ? 3 : 1)
+          : course.credits
+
+        if (!baseCredits.has(code) && !uccCredits.has(code)) {
+          etamCredits.set(code, credits)
+        }
+      }
+    }
+  }
+}
+
+const creditOf = (code: string) => baseCredits.get(code) ?? uccCredits.get(code) ?? etamCredits.get(code)
+/** Canonical course ID, or null for things that are not one course code (e.g. AP's "SPECIAL"). */
+const toCode = (raw: string) => { try { return normalize(raw, aliases) } catch { return null } }
+
+const experienceCourses = new Set<string>()
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.type === 'High-Impact Experience' && info.elective === 'no') {
+    for (const c of key.split('/')) experienceCourses.add(normalize(c, aliases))
+  }
+}
+
+// Raw (as written in the JSON) course codes shown on each requirement card.
+const requiredRawOptions = new Map<string, Set<string>>()
+for (const [key, info] of Object.entries(catalog)) {
+  if (info.elective !== 'no') continue
+  const raw = key.split('/')
+  const normalized = raw.map(c => normalize(c, aliases))
+  if (new Set(normalized).size === 1) {
+    const set = requiredRawOptions.get(normalized[0]) ?? new Set<string>()
+    raw.forEach(c => set.add(stripRaw(c)))
+    requiredRawOptions.set(normalized[0], set)
+  }
+}
+const electiveRawOptions: Record<string, Set<string>> = {}
+for (const name of Object.keys(TARGETS)) electiveRawOptions[name] = new Set()
+for (const [key, info] of Object.entries(catalog)) {
+  if (key === COMPLEMENTARY_KEY || !info.elective_type || !electiveRawOptions[info.elective_type]) continue
+  key.split('/').forEach(c => electiveRawOptions[info.elective_type!].add(stripRaw(c)))
+}
+
+const customCode = (course: { name: string }) => {
+  const value = course.name.replace(/\s+/g, '').toUpperCase()
+  return /^[A-Z]+[0-9]{3}$/.test(value) ? normalize(value, aliases) : null
+}
+const customId = (name: string) => {
+  try { return normalize(name, aliases) } catch {
+    return 'CUSTOM:' + name.toLowerCase().split(/\s+/).filter(Boolean).join(' ')
+  }
+}
+
+type ElectiveResult = { required_credits: number; earned_credits: number; remaining_credits: number; complete: boolean; applied_courses: string[] }
+type Cell = { cost: number; assignments: [string, string][] }
+
+// Python compares (cost, assignments) tuples; this does the same.
+function compareCells(a: Cell, b: Cell) {
+  if (a.cost !== b.cost) return a.cost - b.cost
+  const shared = Math.min(a.assignments.length, b.assignments.length)
+  for (let i = 0; i < shared; i++) {
+    for (let j = 0; j < 2; j++) {
+      const x = a.assignments[i][j], y = b.assignments[i][j]
+      if (x !== y) return x < y ? -1 : 1
+    }
+  }
+  return a.assignments.length - b.assignments.length
+}
+
+/** Exact capped-state DP: each course is used at most once across buckets. */
+function allocate(candidates: Set<string>, eligible: Record<string, Set<string>>, credits: Map<string, number>) {
+  const names = Object.keys(eligible)
+  const targets = names.map(name => TARGETS[name])
+  const zero = targets.map(() => 0)
+  let states = new Map<string, { state: number[]; cell: Cell }>([[zero.join(','), { state: zero, cell: { cost: 0, assignments: [] } }]])
+  for (const code of [...candidates].sort()) {
+    const hours = credits.get(code) ?? 0
+    if (!hours) continue
+    const updates = new Map(states)
+    for (const { state, cell } of states.values()) {
+      names.forEach((name, i) => {
+        if (!eligible[name].has(code) || state[i] >= targets[i]) return
+        const next = [...state]
+        next[i] = Math.min(targets[i], state[i] + hours)
+        const proposal: Cell = { cost: cell.cost + hours, assignments: [...cell.assignments, [code, name]] }
+        const key = next.join(',')
+        const old = updates.get(key)
+        if (!old || compareCells(proposal, old.cell) < 0) updates.set(key, { state: next, cell: proposal })
+      })
+    }
+    states = updates
+  }
+  // Prefer most completed buckets, then most covered credits, then least credit used.
+  let bestKey = zero.join(',')
+  let bestScore: number[] | null = null
+  for (const [key, { state, cell }] of states) {
+    const score = [state.filter((value, i) => value === targets[i]).length, state.reduce((a, b) => a + b, 0), -cell.cost]
+    const better = !bestScore || score[0] > bestScore[0]
+      || (score[0] === bestScore[0] && (score[1] > bestScore[1] || (score[1] === bestScore[1] && score[2] > bestScore[2])))
+    if (better) { bestScore = score; bestKey = key }
+  }
+  const best = states.get(bestKey)!
+  const result: Record<string, ElectiveResult> = {}
+  names.forEach((name, i) => {
+    const selected = best.cell.assignments.filter(([, bucket]) => bucket === name).map(([code]) => code)
+    result[name] = {
+      required_credits: targets[i],
+      earned_credits: selected.reduce((sum, code) => sum + (credits.get(code) ?? 0), 0),
+      remaining_credits: targets[i] - best.state[i],
+      complete: best.state[i] === targets[i],
+      applied_courses: selected,
+    }
+  })
+  return result
+}
+
+/** Whole-course UCC allocation: highest hours first; stop at or above the target.
+ * Used by both the cards and degree totals so their applied courses agree.
+ * Categories without a configured target retain the evaluator's display-only result.
+ */
+function applyWholeCourseUcc(category: UccCategoryResult, isCompleted: (code: string) => boolean): UccCategoryResult {
+  const target = MAJOR_CONFIG.uccTargets[category.name]
+  if (!Number.isFinite(target) || target < 0) return category
+  const candidates = new Map<string, number>()
+  for (const course of category.courses) {
+    const code = toCode(course.canonical)
+    if (!code || !isCompleted(code)) continue
+    const hours = creditOf(code)
+    if (hours !== undefined && Number.isFinite(hours) && hours > 0) candidates.set(code, hours)
+  }
+  const ranked = [...candidates].sort(([a, ah], [b, bh]) => bh - ah || a.localeCompare(b))
+  const selected = new Set<string>()
+  let earned = 0
+  for (const [code, hours] of ranked) {
+    if (earned >= target) break
+    selected.add(code)
+    earned += hours // Never truncate the final course to the remaining requirement.
+  }
+  return {
+    ...category,
+    required: target,
+    earned,
+    remaining: Math.max(0, target - earned),
+    complete: earned >= target,
+    courses: category.courses.map(course => {
+      const code = toCode(course.canonical)
+      return { ...course, completed: code !== null && isCompleted(code), applied: code !== null && selected.has(code) }
+    }),
+  }
+}
+
+function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccCategories: UccCategoryResult[] = []): Report {
+  // Major credits win over UCC credits for the same course.
+  const credits = new Map<string, number>([...etamCredits, ...uccCredits, ...baseCredits])
+  const completed = new Set<string>()
+  for (const raw of completedCourses) {
+    try { completed.add(normalize(raw, aliases)) } catch { /* ignore invalid saved codes */ }
+  }
+  // A known course checked in the custom list must update shared completion first.
+  for (const record of complementary) if (record.completed) completed.add(customId(record.name))
+
+  const applied = new Set<string>()
+  const requiredResults = requiredSorted.map(code => {
+    const done = experienceCourses.has(code) ? highImpact : completed.has(code)
+    if (done) applied.add(code)
+    return { course_id: code, complete: done }
+  })
+
+  const choiceResults = choiceGroups.map(({ label, codes }) => {
+    const available = codes.filter(c => completed.has(c) && !applied.has(c))
+      .sort((a, b) => (credits.get(a)! - credits.get(b)!) || (a < b ? -1 : a > b ? 1 : 0))
+    const selected = available.slice(0, 1)
+    selected.forEach(c => applied.add(c))
+    return { label, selected, required: Math.min(...codes.map(c => credits.get(c) ?? 0)) }
+  })
+
+  // Student-entered complementary courses (catalog credits win for known course codes).
+  const complementaryIds = new Set<string>()
+  const customList: { course_id: string; name: string; credits: number; completed: boolean }[] = []
+  const seen = new Set<string>()
+  for (const record of complementary) {
+    const name = record.name.trim()
+    const hours = record.credits
+    if (!name || !Number.isInteger(hours) || hours <= 0) continue
+    const code = customId(name)
+    if (seen.has(code)) continue
+    seen.add(code)
+    if (record.completed) completed.add(code)
+    if (!credits.has(code)) credits.set(code, hours)
+    complementaryIds.add(code)
+    customList.push({ course_id: code, name, credits: hours, completed: completed.has(code) })
+  }
+
+  // Allocate ALL elective buckets together to prevent cross-bucket reuse.
+  const allEligible: Record<string, Set<string>> = { ...eligibleBuckets, [COMPLEMENTARY]: complementaryIds }
+  const candidates = new Set<string>()
+  for (const bucket of Object.values(allEligible)) for (const code of bucket) if (completed.has(code) && !applied.has(code)) candidates.add(code)
+  const electives = allocate(candidates, allEligible, credits)
+  for (const result of Object.values(electives)) result.applied_courses.forEach(c => applied.add(c))
+
+  const optionsFor = (rawCodes: Iterable<string>, selected: Set<string>): CourseOption[] =>
+    [...new Set(rawCodes)].sort().map(raw => {
+      const code = normalize(raw, aliases)
+      return { course_id: raw, canonical_id: code, credits: credits.get(code) ?? 0, completed: completed.has(code), applied_here: selected.has(code) }
     })
-  }, [focusedDate])
 
-  const changeWeek = (amount: number) => {
-    setFocusedDate((current) => {
-      const next = new Date(current)
-      next.setDate(current.getDate() + amount * 7)
-      return next
+  const cards: Requirement[] = []
+  for (const item of requiredResults) {
+    const code = item.course_id
+    const rawOptions = requiredRawOptions.get(code) ?? new Set([code])
+    const hours = credits.get(code) ?? 0
+    cards.push({
+      id: code, kind: experienceCourses.has(code) ? 'experience' : 'required',
+      show_dropdown: rawOptions.size > 1, multiple: true,
+      required_credits: hours, earned_credits: item.complete ? hours : 0,
+      remaining_credits: item.complete ? 0 : hours, complete: item.complete,
+      applied_courses: item.complete ? [code] : [],
+      options: optionsFor(rawOptions, item.complete ? new Set([code]) : new Set()),
+    })
+  }
+  for (const item of choiceResults) {
+    const rawOptions = item.label.split('/')
+    const earned = item.selected.reduce((sum, c) => sum + (credits.get(c) ?? 0), 0)
+    cards.push({
+      id: item.label, kind: 'choose_one', show_dropdown: new Set(rawOptions).size > 1, multiple: true,
+      required_credits: item.required, earned_credits: earned,
+      remaining_credits: Math.max(0, item.required - earned), complete: item.selected.length > 0,
+      applied_courses: item.selected, options: optionsFor(rawOptions, new Set(item.selected)),
+    })
+  }
+  for (const [name, result] of Object.entries(electives)) {
+    const isCustom = name === COMPLEMENTARY
+    cards.push({
+      id: name, kind: 'elective', show_dropdown: true, multiple: true, ...result,
+      allow_custom_courses: isCustom,
+      options: isCustom
+        ? customList.map(course => ({ ...course, applied_here: result.applied_courses.includes(course.course_id) }))
+        : optionsFor(electiveRawOptions[name], new Set(result.applied_courses)),
     })
   }
 
+  const unknown = [...completed].filter(code => !credits.has(code)).sort()
+  const sumCredits = (codes: Iterable<string>) => { let total = 0; for (const c of codes) total += credits.get(c) ?? 0; return total }
+  // A course may count toward the major AND UCC, but its hours count once.
+  const degreeHoursByCourse = new Map([...applied].map(code => [code, credits.get(code) ?? 0]))
+  for (const category of uccCategories) {
+    // Only categories explicitly required by this degree can add degree hours.
+    const target = MAJOR_CONFIG.uccTargets[category.name]
+    if (!Number.isFinite(target) || target <= 0) continue
+    const selected = applyWholeCourseUcc(category, code => completed.has(code))
+    for (const course of selected.courses) {
+      const code = toCode(course.canonical)
+      if (!code || !course.applied) continue
+      // Shared major/UCC courses and cross-listed aliases contribute hours once.
+      degreeHoursByCourse.set(code, credits.get(code) ?? 0)
+    }
+  }
+  const appliedAll = new Set(degreeHoursByCourse.keys())
+  return {
+    CPSC_BS: cards,
+    degree_credits: [...degreeHoursByCourse.values()].reduce((sum, hours) => sum + hours, 0),
+    applied_codes: [...appliedAll],
+    total_credits: sumCredits([...completed].filter(code => credits.has(code))),
+    total_credits_complete: unknown.length === 0,
+    courses_missing_credit_values: unknown,
+    major_checklist_complete: requiredResults.every(r => r.complete) && choiceResults.every(r => r.selected.length > 0)
+      && Object.values(electives).every(r => r.complete),
+    credit_requirements: { full_degree_total: DEGREE_TOTAL_CREDITS },
+  }
+}
+
+/**
+ * Aggie Ring + degree credit math, kept pure so it can be tested without React.
+ * apHours: hours AP exams award (AP.json). apCounted: AP-covered courses with a known credit value
+ * (they sit inside report.total_credits).
+ */
+function calculateHours(report: Report, apHours: number, apCounted: string[], otherTamuHours: number, transferHours: number) {
+  const sumOf = (codes: Iterable<string>) => { let total = 0; for (const code of codes) total += creditOf(code) ?? 0; return total }
+  // Courses covered by an AP exam sit inside report.total_credits, but were not earned at Texas A&M.
+  const institutionHours = report.total_credits - sumOf(apCounted) + otherTamuHours // earned at Texas A&M (needs 45)
+  const ringHours = institutionHours + apHours + transferHours                       // all completed hours (needs 90)
+  const requiredCredits = report.credit_requirements.full_degree_total
+  // AP courses already participate in the major/UCC requirement allocation.
+  // Unmatched AP awards and unverified manual hours cannot add degree credit.
+  const degreeEarned = report.degree_credits
+  return {
+    institutionHours, ringHours, requiredCredits, degreeEarned,
+    ringRemaining: Math.max(0, RING_TOTAL_HOURS - ringHours),
+    residentRemaining: Math.max(0, RING_RESIDENT_HOURS - institutionHours),
+    degreeRemaining: Math.max(0, requiredCredits - degreeEarned),
+    ringHoursMet: ringHours >= RING_TOTAL_HOURS && institutionHours >= RING_RESIDENT_HOURS,
+  }
+}
+
+// =====================================================================
+
+const panel: CSSProperties = { border: '1px solid #ddd6ce', borderRadius: 8, padding: 12, marginBottom: 12 }
+const control: CSSProperties = { padding: '7px 9px', border: '1px solid #bdb5ad', borderRadius: 5, minWidth: 0 }
+const row: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }
+
+const classesKey = (user: ActiveUser) => `classes_${user.uin}`
+const formatMajor = (major: string) => major.replace(/_/g, ' ')
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
+const toHours = (value: unknown) => {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) ? Math.min(MAX_EXTRA_HOURS, Math.max(0, Math.floor(number))) : 0
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const update = () => setMatches(media.matches)
+    update(); media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [query])
+  return matches
+}
+
+function ProgressMeter({ label, current, total }: { label: string; current: number; total: number }) {
+  const percentage = total > 0 ? Math.min(100, Math.max(0, current / total * 100)) : 0
   return (
-    <main>
-      <header className="calendar-topbar">
-        <div className="brand">
-          <a className="brand__mark" href="/degree.html" aria-label="Go to degree planner">
-            <img src="/app-logo.png" alt="" />
-          </a>
-          <a className="calendar-link" href="/degree.html">
-            <DegreeIcon />
-            <span>Degree</span>
-          </a>
+    <div className="metric metric--progress">
+      <div className="metric__topline">
+        <span className="metric__label">{label}</span>
+        <div className="progress-value" style={{ flexShrink: 0, overflow: 'visible', textOverflow: 'clip', whiteSpace: 'nowrap' }}>
+          {current} <span>/ {total}</span>
         </div>
+      </div>
+      <div className="progress" role="progressbar" aria-label={`${label}: ${current} of ${total}`}
+        aria-valuemin={0} aria-valuemax={total} aria-valuenow={Math.min(current, total)} aria-valuetext={`${current} of ${total}`}>
+        <span style={{ width: `${percentage}%` }} />
+      </div>
+    </div>
+  )
+}
 
-        <div className="calendar-identity">
-          <div className="metric">
-            <span className="metric__label">Student</span>
-            <strong>{student.name}</strong>
-            <span className="metric__detail">
-              UIN {student.uin} · {formatMajor(student.major)}
-            </span>
-          </div>
-          <div className="metric">
-            <span className="metric__label">Academic year</span>
-            <strong>{student.year}</strong>
-            <span className="metric__detail">{student.semester}</span>
-          </div>
+function SlidingText({ children }: { children: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLSpanElement>(null)
+  const [overflow, setOverflow] = useState(0)
+
+  useLayoutEffect(() => {
+    let disposed = false
+
+    const measure = () => {
+      if (
+        disposed ||
+        !containerRef.current ||
+        !textRef.current
+      ) {
+        return
+      }
+
+      setOverflow(
+        Math.max(
+          0,
+          textRef.current.scrollWidth -
+            containerRef.current.clientWidth,
+        ),
+      )
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(containerRef.current)
+    observer.observe(textRef.current)
+
+    void document.fonts?.ready.then(measure)
+
+    return () => {
+      disposed = true
+      observer.disconnect()
+    }
+  }, [children])
+
+  return (
+    <div className="sliding-name" ref={containerRef}>
+      <span
+        ref={textRef}
+        className={
+          overflow > 1
+            ? 'sliding-name__text sliding-name__text--active'
+            : 'sliding-name__text'
+        }
+        style={
+          {
+            '--name-overflow': `${overflow}px`,
+          } as CSSProperties
+        }
+        title={children}
+      >
+        {children}
+      </span>
+    </div>
+  )
+}
+
+function CalendarIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M7 3v3m10-3v3M4.5 9.5h15M6 5h12a2 2 0 0 1 2 2v12H4V7a2 2 0 0 1 2-2Z" />
+    <path d="M7.5 13h2m3 0h2m3 0h.5m-10.5 3.5h2m3 0h2" />
+  </svg>
+}
+
+export default function App() {
+  const isMobile = useMediaQuery('(max-width: 800px)')
+  const [activeUser, setActiveUser] = useState<ActiveUser | null>(null)
+  const [hydrated, setHydrated] = useState(false) // true once saved classes have been loaded for the active user
+  const [completed, setCompleted] = useState<string[]>([])
+  const [customCourses, setCustomCourses] = useState<CustomCourse[]>([])
+  const [highImpact, setHighImpact] = useState(false)
+  const [otherTamuHours, setOtherTamuHours] = useState(0) // TAMU hours outside the CS BS checklist (e.g. UCC)
+  const [transferHours, setTransferHours] = useState(0)   // AP / credit by exam / transfer hours
+  const [customName, setCustomName] = useState('')
+  const [customCredits, setCustomCredits] = useState('3')
+  const [formError, setFormError] = useState('')
+  const [apScores, setApScores] = useState<Record<string, number>>({})
+  const [apAlternates, setApAlternates] = useState<string[]>([])
+  const [apFilter, setApFilter] = useState('')
+  const [uccFilters, setUccFilters] = useState<Record<string, string>>({})
+
+  // 1. LOAD ACTIVE SESSION + this user's saved classes
+  useEffect(() => {
+    let user: ActiveUser | null = null
+    try {
+      const raw = localStorage.getItem('activeLoggedInUser')
+      const parsed = raw ? JSON.parse(raw) : null
+      if (parsed && typeof parsed === 'object' && parsed.uin !== undefined && parsed.uin !== null && parsed.uin !== '') user = parsed as ActiveUser
+    } catch { user = null }
+
+    if (!user) { window.location.href = '/index.html'; return }
+    setActiveUser(user)
+
+    try {
+      const saved = localStorage.getItem(classesKey(user))
+      if (saved) {
+        const data = JSON.parse(saved) as Partial<SavedPlanner>
+        if (Array.isArray(data.completed)) setCompleted(data.completed)
+        if (Array.isArray(data.customCourses)) setCustomCourses(data.customCourses)
+        if (typeof data.highImpact === 'boolean') setHighImpact(data.highImpact)
+        setOtherTamuHours(toHours(data.otherTamuHours))
+        setTransferHours(toHours(data.transferHours))
+        if (data.apScores && typeof data.apScores === 'object') {
+          setApScores(Object.fromEntries(Object.entries(data.apScores).filter(([, score]) => Number.isInteger(score) && score >= 1 && score <= 5)))
+        }
+        if (Array.isArray(data.apAlternates)) setApAlternates(data.apAlternates.filter((id): id is string => typeof id === 'string'))
+        // ringHours and requiredCredits are recalculated below, not read back.
+      }
+    } catch { /* corrupted saved data: start fresh */ }
+    setHydrated(true)
+  }, [])
+
+  // 2. Progress is calculated locally from the JSON files: no network request
+  // AP exams -> credited courses. Those courses count as completed for the major and UCC, but are not Texas A&M hours.
+  const ap = useMemo(() => evaluateAp(apTable, apScores, apAlternates, toCode), [apScores, apAlternates])
+  const apCovered = useMemo(() => new Set(ap.courses.map(toCode).filter((code): code is string => code !== null)), [ap])
+  const apCounted = useMemo(() => [...apCovered].filter(code => creditOf(code) !== undefined), [apCovered])
+  const completedWithAp = useMemo(() => [...new Set([...completed, ...apCounted])], [completed, apCounted])
+  const completedSet = useMemo(() => {
+    const set = new Set<string>()
+    for (const raw of completedWithAp) { const code = toCode(raw); if (code) set.add(code) }
+    for (const course of customCourses) if (course.completed) { const code = customCode(course); if (code) set.add(code) }
+    return set
+  }, [completedWithAp, customCourses])
+  const ucc = useMemo(() => {
+    const result = evaluateUcc(uccTable, code => completedSet.has(toCode(code) ?? ''), MAJOR_CONFIG.uccTargets)
+    const categories = result.categories.map(category => applyWholeCourseUcc(category, code => completedSet.has(code)))
+    const appliedCodes = [...new Set(categories.flatMap(category => category.courses
+      .filter(course => course.applied)
+      .map(course => toCode(course.canonical))
+      .filter((code): code is string => code !== null)))]
+    return { ...result, categories, appliedCodes }
+  }, [completedSet])
+  const report = useMemo(() => buildReport(completedWithAp, customCourses, highImpact, ucc.categories), [completedWithAp, customCourses, highImpact, ucc])
+  const requirements = report.CPSC_BS
+
+  // 3. TAMU credit calculations (Aggie Ring + degree credits)
+  const hours = useMemo(
+    () => calculateHours(report, ap.hours, apCounted, otherTamuHours, transferHours),
+    [report, ap, apCounted, otherTamuHours, transferHours])
+
+  // 4. SAVE to the user-specific key whenever their classes or hours change
+  useEffect(() => {
+    if (!hydrated || !activeUser) return // don't overwrite saved data with empty state before loading
+    try {
+      const data: SavedPlanner = {
+        completed, customCourses, highImpact, otherTamuHours, transferHours,
+        ringHours: hours.ringHours, requiredCredits: hours.requiredCredits, apScores, apAlternates,
+      }
+      localStorage.setItem(classesKey(activeUser), JSON.stringify(data))
+    } catch { /* storage full or unavailable */ }
+  }, [hydrated, activeUser, completed, customCourses, highImpact, otherTamuHours, transferHours, apScores, apAlternates, hours.ringHours, hours.requiredCredits])
+
+  const isCompleted = (raw: string) => completedSet.has(toCode(raw) ?? '')
+  const setApScore = (examId: string, value: string) => setApScores(previous => {
+    const next = { ...previous }
+    const score = Number(value)
+    if (!value || !Number.isInteger(score)) delete next[examId]; else next[examId] = score
+    return next
+  })
+  const toggleApAlternate = (examId: string, checked: boolean) =>
+    setApAlternates(previous => checked ? [...new Set([...previous, examId])] : previous.filter(id => id !== examId))
+  const toggleCourse = (code: string, checked: boolean) => {
+    const canonical = toCode(code)
+    if (!canonical || apCovered.has(canonical)) return
+    setCompleted(previous => {
+      const next = new Set(previous.map(toCode).filter((item): item is string => item !== null))
+      if (checked) next.add(canonical); else next.delete(canonical)
+      return [...next]
+    })
+    setCustomCourses(previous => previous.map(c => customCode(c) === canonical ? { ...c, completed: checked } : c))
+  }
+  const toggleCustom = (course: CustomCourse, checked: boolean) => {
+    const code = customCode(course)
+    if (code) toggleCourse(code, checked)
+    else setCustomCourses(previous => previous.map(c => c.id === course.id ? { ...c, completed: checked } : c))
+  }
+  const removeCustom = (course: CustomCourse) => {
+    // Removing an entry is different from unchecking completion: an actual
+    // course still checked in a standard requirement remains completed.
+    setCustomCourses(previous => previous.filter(c => c.id !== course.id))
+    const code = customCode(course)
+    if (code && creditOf(code) === undefined) setCompleted(previous => previous.filter(c => c !== code))
+  }
+  const addCustom = (event: FormEvent) => {
+    event.preventDefault()
+    const name = customName.trim(); const credits = Number(customCredits)
+    if (!name || !Number.isInteger(credits) || credits < 1) { setFormError('Enter a course name and positive whole-number credits.'); return }
+    const identity = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ')
+    const proposedCode = customCode({ name })
+    if (customCourses.some(c => identity(c.name) === identity(name) || (proposedCode && customCode(c) === proposedCode))) {
+      setFormError('This course is already in your list.'); return
+    }
+    const known = proposedCode ? creditOf(proposedCode) : undefined
+    if (known !== undefined && known !== credits) {
+      setFormError(`${proposedCode} is worth ${known} credits in the catalog. Use that value.`); return
+    }
+    // Appending updates state; the save effect above writes it to `classes_${activeUser.uin}`.
+    setCustomCourses(previous => [...previous, { id: crypto.randomUUID(), name, credits, completed: proposedCode ? completed.some(raw => toCode(raw) === proposedCode) : false }])
+    setCustomName(''); setCustomCredits('3'); setFormError('')
+  }
+
+  const renderOptions = (requirement: Requirement) => <div style={{ maxHeight: 240, overflowY: 'auto', paddingTop: 8 }}>
+    {requirement.options.map(option => {
+      const code = option.canonical_id ?? option.course_id
+      const viaAp = apCovered.has(code)
+      return <label key={option.course_id} style={row}>
+        <input type="checkbox" checked={isCompleted(code)} disabled={viaAp} onChange={event => toggleCourse(code, event.target.checked)} />
+        <span>{option.course_id} <small>({option.credits} cr)</small></span>
+        {(viaAp || option.applied_here) && <small style={{ marginLeft: 'auto' }}>{viaAp ? (option.applied_here ? 'AP credit · Applied here' : 'AP credit') : 'Applied here'}</small>}
+      </label>
+    })}
+  </div>
+
+  const renderUccCourses = (category: UccCategoryResult) => {
+    const filter = (uccFilters[category.name] ?? '').trim().toLowerCase()
+    const shown = category.courses.filter(course => !filter || course.label.toLowerCase().includes(filter))
+    return <details>
+      <summary>Select completed courses ({category.courses.filter(course => course.completed).length} / {category.courses.length})</summary>
+      {category.courses.length > 10 && <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 8 }} type="search"
+        placeholder="Filter courses" aria-label={`Filter ${category.name} courses`} value={uccFilters[category.name] ?? ''}
+        onChange={event => setUccFilters(previous => ({ ...previous, [category.name]: event.target.value }))} />}
+      <div style={{ maxHeight: 240, overflowY: 'auto', paddingTop: 8 }}>
+        {shown.map(course => {
+          const viaAp = apCovered.has(toCode(course.canonical) ?? '')
+          return <label key={course.canonical} style={row}>
+            <input type="checkbox" checked={isCompleted(course.canonical)} disabled={viaAp} onChange={event => toggleCourse(course.canonical, event.target.checked)} />
+            <span>{course.label} <small>({course.credits} cr)</small></span>
+            {(viaAp || course.applied) && <small style={{ marginLeft: 'auto' }}>{viaAp ? 'AP credit' : 'Applied here'}</small>}
+          </label>
+        })}
+        {shown.length === 0 && <small>No matching courses.</small>}
+      </div>
+    </details>
+  }
+
+  // Nothing to show until a session is found (the redirect is already in flight otherwise).
+  if (!activeUser) return null
+
+  const apFilterText = apFilter.trim().toLowerCase()
+  const apExams = apTable.exams.filter(exam => !apFilterText || exam.name.toLowerCase().includes(apFilterText))
+
+  const displayName = activeUser.name || student.name
+const displayUin = String(activeUser.uin)
+const displayMajor = formatMajor(activeUser.major || student.major)
+const displayYear = activeUser.year
+  ? capitalize(activeUser.year)
+  : student.year
+const displaySemester = activeUser.sem
+  ? `Semester ${activeUser.sem}`
+  : activeUser.semester || student.semester
+
+  return <main>
+    <header className="topbar">
+      <div className="brand">
+        <div
+          className="brand__mark"
+          style={{ padding: 0, border: 'none', overflow: 'hidden' }}
+        >
+          <img
+            src="/app-logo.png"
+            alt="DO logo"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+            />
         </div>
+        <a className="calendar-link" href="/calendar.html"><CalendarIcon /><span>Calendar</span></a>
+      </div>
+      <div className="student-metrics" style={{ width: 'auto', minWidth: 0, flex: '1 1 0',
+        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, .85fr) minmax(0, .85fr) minmax(0, .7fr) minmax(0, 1.3fr) minmax(0, 1.3fr)' }}>
+        <div className="metric">
+  <span className="metric__label">Student</span>
+  <SlidingText>{displayName}</SlidingText>
+  <span className="metric__detail">
+    UIN {displayUin} · {displayMajor}
+  </span>
+</div>
+        <div className="metric"><span className="metric__label">Academic year</span><SlidingText>{displayYear}</SlidingText><span className="metric__detail">{displaySemester}</span></div>
+        <div className="metric"><span className="metric__label">Total credits</span><strong>{hours.ringHours}</strong><span className="metric__detail">hours completed</span></div>
+        <ProgressMeter label="Aggie Ring" current={hours.ringHours} total={RING_TOTAL_HOURS} />
+        <ProgressMeter label="Degree credits" current={hours.degreeEarned} total={hours.requiredCredits} />
+      </div>
+    </header>
+    <section className="page-shell" aria-labelledby="page-title">
+      <div className="intro">
+        <div><p className="eyebrow">Degree planner</p><h1 id="page-title">Your degree at a glance</h1></div>
+        <p className="intro__copy">Track completed credit and the requirements still ahead.</p>
+      </div>
+      {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
 
-        <a className="add-event-button" href="/add.html">
-          <PlusIcon />
-          Add event
-        </a>
-      </header>
+      <section
+        className="requirements-table"
+        aria-labelledby="etam-title"
+        style={{
+          display: 'block',
+          height: 'auto',
+          minHeight: 0,
+          marginBottom: 20,
+        }}
+      >
+        <div
+          className="requirements-column"
+          style={{
+            display: 'block',
+            height: 'auto',
+            minHeight: 0,
+          }}
+        >
+          <div className="column-heading">
+            <span>ETAM</span>
+            <h2 id="etam-title">Entry to a Major</h2>
+          </div>
 
-      <section className="calendar-shell" aria-labelledby="calendar-title">
-        <div className="calendar-toolbar">
-          <div>
-            <p className="eyebrow">Academic schedule</p>
-            <div className="calendar-title-row">
-              <h1 id="calendar-title">{monthFormatter.format(focusedDate)}</h1>
-              <button
-                className="month-picker"
-                type="button"
-                aria-label="Choose a month"
-                aria-expanded={pickerOpen}
-                onClick={() => {
-                  setPickerYear(focusedDate.getFullYear())
-                  setPickerOpen((open) => !open)
-                }}
-              >
-                <MonthPickerIcon />
-              </button>
-              {pickerOpen && (
-                <div className="month-popover">
-                  <div className="year-picker">
-                    <button type="button" onClick={() => setPickerYear((year) => year - 1)}>
-                      ←
-                    </button>
-                    <strong>{pickerYear}</strong>
-                    <button type="button" onClick={() => setPickerYear((year) => year + 1)}>
-                      →
-                    </button>
-                  </div>
-                  <div className="month-options">
-                    {months.map((monthName, month) => (
-                      <button
-                        type="button"
-                        key={monthName}
-                        onClick={() => {
-                          const year = pickerYear
-                          const isCurrentMonth =
-                            year === today.getFullYear() && month === today.getMonth()
-                          setFocusedDate(isCurrentMonth ? today : new Date(year, month, 1))
-                          setPickerOpen(false)
-                        }}
-                      >
-                        {monthName}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="month-controls" aria-label="Calendar navigation">
-            <button type="button" onClick={() => changeWeek(-1)} aria-label="Previous week">
-              ←
-            </button>
-            <button
-              type="button"
-              onClick={() => setFocusedDate(today)}
-            >
-              Today
-            </button>
-            <button type="button" onClick={() => changeWeek(1)} aria-label="Next week">
-              →
-            </button>
-          </div>
-        </div>
+          <p style={{ padding: '0 12px', fontSize: 13 }}>
+            Select completed courses. This checklist tracks coursework only,
+            not ETAM eligibility or GPA.
+          </p>
 
-        <div className="calendar-board">
-          <div className="weekday-row">
-            {weekdays.map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-          <div className="month-grid">
-            {calendarDays.map((date) => {
-              const key = dateKey(date)
-              const outsideMonth = date.getMonth() !== focusedDate.getMonth()
-              const isToday = key === dateKey(today)
+          <div
+            className="ucc-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile
+                ? '1fr'
+                : 'repeat(3, minmax(0, 1fr))',
+              gridTemplateRows: 'auto',
+              gridAutoRows: 'auto',
+              height: 'auto',
+              minHeight: 0,
+              alignItems: 'start',
+              alignContent: 'start',
+              flex: 'none',
+            }}
+          >
+            {etamGroups.map(group => {
+              const completedCount = group.courses.filter(course =>
+                course.alternatives.some(codes =>
+                  codes.every(code => isCompleted(code))
+                )
+              ).length
+
               return (
-                <div
-                  className={[
-                    'calendar-day',
-                    outsideMonth ? 'calendar-day--outside' : '',
-                    isToday ? 'calendar-day--today' : '',
-                  ].join(' ')}
-                  key={key}
+                <article
+                  className="ucc-card"
+                  key={group.type}
+                  style={{
+                    display: 'block',
+                    height: 'auto',
+                    minHeight: 0,
+                    minWidth: 0,
+                  }}
                 >
-                  <span className="day-number">{date.getDate()}</span>
-                  {eventTitle && key === eventDate && (
-                    <span className="event-chip">{eventTitle}</span>
-                  )}
-                </div>
+                  <h3>{group.label}</h3>
+
+                  <details>
+                    <summary>
+                      Select completed courses ({completedCount} / {group.courses.length})
+                    </summary>
+
+                    <div
+                      style={{
+                        paddingTop: 10,
+                        maxHeight: 260,
+                        overflowY: 'auto',
+                      }}
+                    >
+                      {group.courses.map(course => (
+                        <div key={course.label} style={panel}>
+                          <div style={{ marginBottom: 6 }}>
+                            <strong style={{ fontSize: 14 }}>
+                              {course.label}
+                            </strong>
+                            <small> ({course.credits} cr)</small>
+                          </div>
+
+                          {course.alternatives.flatMap(codes =>
+                            codes.map(code => {
+                              const viaAp = apCovered.has(code)
+
+                              return (
+                                <label key={code} style={row}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isCompleted(code)}
+                                    disabled={viaAp}
+                                    onChange={event =>
+                                      toggleCourse(code, event.target.checked)
+                                    }
+                                  />
+                                  <span>{code}</span>
+
+                                  {viaAp && (
+                                    <small style={{ marginLeft: 'auto' }}>
+                                      AP credit
+                                    </small>
+                                  )}
+                                </label>
+                              )
+                            })
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </article>
               )
             })}
           </div>
         </div>
       </section>
-    </main>
-  )
+      <section aria-label="Credit hours summary" style={panel}>
+  <div style={{
+    display: 'grid',
+    gap: 8,
+    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+  }}>
+    <label>
+      Other TAMU hours (total / Ring hours only)
+      <input
+        style={{
+          ...control,
+          display: 'block',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+        type="number"
+        min="0"
+        max={MAX_EXTRA_HOURS}
+        step="1"
+        placeholder="0"
+        value={otherTamuHours === 0 ? '' : otherTamuHours}
+        onChange={event => setOtherTamuHours(toHours(event.target.value))}
+      />
+    </label>
+
+    <label>
+      Other transfer / credit-by-exam hours (total / Ring only; excluding AP below)
+      <input
+        style={{
+          ...control,
+          display: 'block',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+        type="number"
+        min="0"
+        max={MAX_EXTRA_HOURS}
+        step="1"
+        placeholder="0"
+        value={transferHours === 0 ? '' : transferHours}
+        onChange={event => setTransferHours(toHours(event.target.value))}
+      />
+    </label>
+  </div>
+</section>
+
+      <div className="requirements-table">
+        <section className="requirements-column">
+          <div className="column-heading"><span>01</span><h2>AP Credit</h2></div>
+          <p style={{ padding: '0 12px', fontSize: 13 }}>Choose the score you earned on each AP exam. Credit counts toward your Aggie Ring total hours (not the 45 Texas A&amp;M hours) and checks off the courses it covers.</p>
+          <p style={{ padding: '0 12px' }}>{ap.hours} {ap.hours === 1 ? 'hour' : 'hours'} of AP credit</p>
+          <div style={{ padding: '0 12px' }}>
+            <input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="search" placeholder="Filter AP exams"
+              aria-label="Filter AP exams" value={apFilter} onChange={event => setApFilter(event.target.value)} />
+          </div>
+          <ul aria-label="AP Credit requirements" style={{ listStyle: 'none', margin: 0, padding: 12 }}>
+            {apExams.map(exam => {
+              const result = ap.byExam.get(exam.id)
+              const score = apScores[exam.id]
+              return <li key={exam.id} style={panel}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <label htmlFor={`ap-${exam.id}`} style={{ overflowWrap: 'anywhere' }}>{exam.name}</label>
+                  <select id={`ap-${exam.id}`} style={control} value={score ?? ''} onChange={event => setApScore(exam.id, event.target.value)}>
+                    <option value="">Score</option>
+                    {AP_SCORES.map(value => <option key={value} value={value}>{value}</option>)}
+                  </select>
+                </div>
+                {score !== undefined && (result?.award ? <>
+                  <p style={{ fontSize: 12, margin: '6px 0 0' }} title={result.award.note}>
+                    {result.hours} {result.hours === 1 ? 'hour' : 'hours'}{result.courses.length > 0 && ` · ${result.courses.join(', ')}`}{result.placeholder && ' · exact credit is set by your advisor'}
+                  </p>
+                  {result.award.alternative && <label style={row}>
+                    <input type="checkbox" checked={result.usedAlternative} onChange={event => toggleApAlternate(exam.id, event.target.checked)} />
+                    <small>Use the {result.award.alternative.credits}-hour option ({result.award.alternative.courses.join(', ')})</small>
+                  </label>}
+                  {result.overlap.length > 0 && <p style={{ fontSize: 12, margin: '4px 0 0' }}>{result.overlap.join(', ')} already credited by another exam, so those hours are not counted twice.</p>}
+                </> : <p style={{ fontSize: 12, margin: '6px 0 0' }}>No credit: Texas A&amp;M starts at a score of {exam.awards[0].minScore} for this exam.</p>)}
+              </li>
+            })}
+          </ul>
+          {apExams.length === 0 && <p className="empty-state">No exams match.</p>}
+        </section>
+        <section className="requirements-column">
+          <div className="column-heading"><span>02</span><h2>Degree (Major)</h2></div>
+          <p style={{ padding: '0 12px', fontSize: 13 }}>CS BS · Major requirements. Check courses you have completed. UCC is tracked in the next column; ETAM coursework is tracked above. Degree credit is awarded only for configured major and UCC requirements.</p>
+          <p style={{ padding: '0 12px' }}>{report.major_checklist_complete ? 'Major checklist complete' : 'Major checklist in progress'}</p>
+          <ul aria-label="CS BS requirements" style={{ listStyle: 'none', margin: 0, padding: 12 }}>
+            {requirements.map(requirement => <li key={requirement.id} style={panel}>
+              <h3 style={{ fontSize: 15, margin: '0 0 6px', overflowWrap: 'anywhere' }}>{requirement.id}</h3>
+              <p style={{ fontSize: 12, margin: '0 0 8px' }}>{requirement.kind === 'experience' ? (requirement.complete ? 'Completed' : 'Completion required · 0 credits')
+                : `${requirement.earned_credits} / ${requirement.required_credits} credits applied · ${requirement.complete ? 'Complete' : `${requirement.remaining_credits} credits remaining`}`}</p>
+              {requirement.allow_custom_courses ? <>
+                <p style={{ fontSize: 12 }}>Choose courses with your advisor. Add the course name or code and its credits, then check it when completed.</p>
+                <details><summary>Add / select courses ({customCourses.length})</summary>
+                  {customCourses.length === 0 && <p style={{ fontSize: 12 }}>No courses added yet.</p>}
+                  {customCourses.map(course => <div key={course.id} style={row}>
+                    <label style={{ ...row, flex: 1 }}><input type="checkbox" checked={customCode(course) ? isCompleted(customCode(course)!) : course.completed}
+                      disabled={apCovered.has(customCode(course) ?? '')}
+                      onChange={event => toggleCustom(course, event.target.checked)} /><span>{course.name} ({course.credits} cr)</span></label>
+                    <button type="button" style={control} aria-label={`Remove ${course.name}`} onClick={() => removeCustom(course)}>Remove</button>
+                  </div>)}
+                  <form onSubmit={addCustom} style={{ display: 'grid', gap: 8, paddingTop: 10 }}>
+                    <label>Course name or code<input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} value={customName} maxLength={160} onChange={event => setCustomName(event.target.value)} required /></label>
+                    <label>Credits<input style={{ ...control, display: 'block', width: '100%', boxSizing: 'border-box' }} type="number" min="1" step="1" value={customCredits} onChange={event => setCustomCredits(event.target.value)} required /></label>
+                    <button type="submit" style={control}>Add course</button>
+                    {formError && <p role="alert">{formError}</p>}
+                  </form>
+                </details>
+              </> : requirement.kind === 'experience' ? <label style={row}><input type="checkbox" checked={highImpact} onChange={event => setHighImpact(event.target.checked)} />High-impact experience completed</label>
+                : requirement.show_dropdown ? <details><summary>Select completed courses</summary>{renderOptions(requirement)}</details> : renderOptions(requirement)}
+            </li>)}
+          </ul>
+        </section>
+        <section
+          className="requirements-column requirements-column--ucc"
+          style={{
+            display: 'block',
+            height: 'auto',
+            minHeight: 0,
+            alignSelf: 'start',
+          }}
+        >
+          <div className="column-heading">
+            <span>03</span>
+            <h2>UCC + Other Requirements</h2>
+          </div>
+
+          <div
+            className="ucc-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile
+                ? '1fr'
+                : 'repeat(3, minmax(0, 1fr))',
+              gridTemplateRows: 'none',
+              gridAutoRows: 'auto',
+              height: 'auto',
+              minHeight: 0,
+              alignItems: 'start',
+              alignContent: 'start',
+              flex: 'none',
+            }}
+          >
+            {ucc.categories.map(category => (
+              <article
+                className="ucc-card"
+                key={category.name}
+                style={{
+                  display: 'block',
+                  height: 'auto',
+                  minHeight: 0,
+                  minWidth: 0,
+                }}
+              >
+                <h3>{category.name}</h3>
+
+                <p>
+                  {category.required === null
+                    ? `${category.earned} credits applied`
+                    : `${category.earned} / ${category.required} credits applied · ${
+                        category.complete
+                          ? 'Complete'
+                          : `${category.remaining} credits remaining`
+                      }`}
+                </p>
+
+                {renderUccCourses(category)}
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
 }
