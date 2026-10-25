@@ -112,7 +112,13 @@ const apTable = parseAp(apFile as unknown)
 function normalize(code: string, aliasMap: Record<string, string> = {}) {
   const cleaned = code.replace(/\s+/g, '').toUpperCase()
   if (!/^[A-Z]+[0-9]{3}$/.test(cleaned)) throw new Error(`Use one actual course code, not a group: ${cleaned}`)
-  return aliasMap[cleaned] ?? cleaned
+  let canonical = cleaned
+  const visited = new Set<string>()
+  while (aliasMap[canonical] && !visited.has(canonical)) {
+    visited.add(canonical)
+    canonical = aliasMap[canonical]
+  }
+  return canonical
 }
 const stripRaw = (code: string) => code.replace(/ /g, '').toUpperCase()
 
@@ -152,6 +158,9 @@ for (const [key, info] of Object.entries(catalog)) {
 }
 const requiredSorted = [...new Set(requiredCodes)].sort()
 
+/** Credits for any known course: the major's catalog first, then UCC.json. */
+const uccCredits = new Map<string, number>()
+for (const [raw, hours] of uccTable.credits) uccCredits.set(normalize(raw, aliases), hours)
 type EtamEntry = {
   type: string
   credits: number
@@ -185,11 +194,11 @@ for (const group of etamGroups) {
   for (const course of group.courses) {
     for (const alternative of course.alternatives) {
       for (const code of alternative) {
-        const credits = course.label === 'CHEM107&CHEM117'
+        const credits = alternative.length === 2 && alternative.includes('CHEM107') && alternative.includes('CHEM117')
           ? (code === 'CHEM107' ? 3 : 1)
           : course.credits
 
-        if (!baseCredits.has(code) && !uccTable.credits.has(code)) {
+        if (!baseCredits.has(code) && !uccCredits.has(code)) {
           etamCredits.set(code, credits)
         }
       }
@@ -197,9 +206,7 @@ for (const group of etamGroups) {
   }
 }
 
-/** Credits for any known course: the major's catalog first, then UCC.json. */
-const creditOf = (code: string) =>
-  baseCredits.get(code) ?? uccTable.credits.get(code) ?? etamCredits.get(code)
+const creditOf = (code: string) => baseCredits.get(code) ?? uccCredits.get(code) ?? etamCredits.get(code)
 /** Canonical course ID, or null for things that are not one course code (e.g. AP's "SPECIAL"). */
 const toCode = (raw: string) => { try { return normalize(raw, aliases) } catch { return null } }
 
@@ -302,13 +309,9 @@ function allocate(candidates: Set<string>, eligible: Record<string, Set<string>>
   return result
 }
 
-function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccApplied: Iterable<string> = []): Report {
+function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccCategories: UccCategoryResult[] = []): Report {
   // Major credits win over UCC credits for the same course.
-  const credits = new Map<string, number>([
-    ...etamCredits,
-    ...uccTable.credits,
-    ...baseCredits,
-  ])
+  const credits = new Map<string, number>([...etamCredits, ...uccCredits, ...baseCredits])
   const completed = new Set<string>()
   for (const raw of completedCourses) {
     try { completed.add(normalize(raw, aliases)) } catch { /* ignore invalid saved codes */ }
@@ -399,10 +402,32 @@ function buildReport(completedCourses: string[], complementary: CustomCourse[], 
   const unknown = [...completed].filter(code => !credits.has(code)).sort()
   const sumCredits = (codes: Iterable<string>) => { let total = 0; for (const c of codes) total += credits.get(c) ?? 0; return total }
   // A course may count toward the major AND UCC, but its hours count once.
-  const appliedAll = new Set([...applied, ...uccApplied])
+  const degreeHoursByCourse = new Map([...applied].map(code => [code, credits.get(code) ?? 0]))
+  for (const category of uccCategories) {
+    // Only categories explicitly required by this degree can add degree hours.
+    const target = MAJOR_CONFIG.uccTargets[category.name]
+    if (!Number.isFinite(target) || target <= 0) continue
+    let remaining = target
+    const seenCourses = new Set<string>()
+    // Prefer courses already used by the major, so overlapping requirements
+    // do not create additional degree hours from surplus core courses.
+    const courses = [...category.courses].sort((a, b) =>
+      Number(applied.has(toCode(b.canonical) ?? '')) - Number(applied.has(toCode(a.canonical) ?? '')))
+    for (const course of courses) {
+      const code = toCode(course.canonical)
+      if (!code || !completed.has(code) || seenCourses.has(code)) continue
+      if (!course.applied && !applied.has(code)) continue
+      seenCourses.add(code)
+      const used = Math.min(remaining, credits.get(code) ?? 0)
+      if (used <= 0) continue
+      degreeHoursByCourse.set(code, Math.max(degreeHoursByCourse.get(code) ?? 0, used))
+      remaining -= used
+    }
+  }
+  const appliedAll = new Set(degreeHoursByCourse.keys())
   return {
     CPSC_BS: cards,
-    degree_credits: sumCredits(appliedAll),
+    degree_credits: [...degreeHoursByCourse.values()].reduce((sum, hours) => sum + hours, 0),
     applied_codes: [...appliedAll],
     total_credits: sumCredits([...completed].filter(code => credits.has(code))),
     total_credits_complete: unknown.length === 0,
@@ -416,17 +441,17 @@ function buildReport(completedCourses: string[], complementary: CustomCourse[], 
 /**
  * Aggie Ring + degree credit math, kept pure so it can be tested without React.
  * apHours: hours AP exams award (AP.json). apCounted: AP-covered courses with a known credit value
- * (they sit inside report.total_credits). apCovered: every course an AP exam covers.
+ * (they sit inside report.total_credits).
  */
-function calculateHours(report: Report, apHours: number, apCounted: string[], apCovered: Set<string>, otherTamuHours: number, transferHours: number) {
+function calculateHours(report: Report, apHours: number, apCounted: string[], otherTamuHours: number, transferHours: number) {
   const sumOf = (codes: Iterable<string>) => { let total = 0; for (const code of codes) total += creditOf(code) ?? 0; return total }
   // Courses covered by an AP exam sit inside report.total_credits, but were not earned at Texas A&M.
   const institutionHours = report.total_credits - sumOf(apCounted) + otherTamuHours // earned at Texas A&M (needs 45)
   const ringHours = institutionHours + apHours + transferHours                       // all completed hours (needs 90)
   const requiredCredits = report.credit_requirements.full_degree_total
-  // AP hours apply to the degree: the part matching applied courses is already in degree_credits, the rest is added here.
-  const apApplied = sumOf(report.applied_codes.filter(code => apCovered.has(code)))
-  const degreeEarned = report.degree_credits - apApplied + Math.max(apHours, apApplied) + otherTamuHours + transferHours
+  // AP courses already participate in the major/UCC requirement allocation.
+  // Unmatched AP awards and unverified manual hours cannot add degree credit.
+  const degreeEarned = report.degree_credits
   return {
     institutionHours, ringHours, requiredCredits, degreeEarned,
     ringRemaining: Math.max(0, RING_TOTAL_HOURS - ringHours),
@@ -599,8 +624,8 @@ export default function App() {
   // 2. Progress is calculated locally from the JSON files: no network request
   // AP exams -> credited courses. Those courses count as completed for the major and UCC, but are not Texas A&M hours.
   const ap = useMemo(() => evaluateAp(apTable, apScores, apAlternates, toCode), [apScores, apAlternates])
-  const apCovered = useMemo(() => new Set(ap.courses), [ap])
-  const apCounted = useMemo(() => ap.courses.filter(code => creditOf(code) !== undefined), [ap])
+  const apCovered = useMemo(() => new Set(ap.courses.map(toCode).filter((code): code is string => code !== null)), [ap])
+  const apCounted = useMemo(() => [...apCovered].filter(code => creditOf(code) !== undefined), [apCovered])
   const completedWithAp = useMemo(() => [...new Set([...completed, ...apCounted])], [completed, apCounted])
   const completedSet = useMemo(() => {
     const set = new Set<string>()
@@ -608,14 +633,14 @@ export default function App() {
     for (const course of customCourses) if (course.completed) { const code = customCode(course); if (code) set.add(code) }
     return set
   }, [completedWithAp, customCourses])
-  const ucc = useMemo(() => evaluateUcc(uccTable, code => completedSet.has(code), MAJOR_CONFIG.uccTargets), [completedSet])
-  const report = useMemo(() => buildReport(completedWithAp, customCourses, highImpact, ucc.appliedCodes), [completedWithAp, customCourses, highImpact, ucc])
+  const ucc = useMemo(() => evaluateUcc(uccTable, code => completedSet.has(toCode(code) ?? ''), MAJOR_CONFIG.uccTargets), [completedSet])
+  const report = useMemo(() => buildReport(completedWithAp, customCourses, highImpact, ucc.categories), [completedWithAp, customCourses, highImpact, ucc])
   const requirements = report.CPSC_BS
 
   // 3. TAMU credit calculations (Aggie Ring + degree credits)
   const hours = useMemo(
-    () => calculateHours(report, ap.hours, apCounted, apCovered, otherTamuHours, transferHours),
-    [report, ap, apCounted, apCovered, otherTamuHours, transferHours])
+    () => calculateHours(report, ap.hours, apCounted, otherTamuHours, transferHours),
+    [report, ap, apCounted, otherTamuHours, transferHours])
 
   // 4. SAVE to the user-specific key whenever their classes or hours change
   useEffect(() => {
@@ -629,7 +654,7 @@ export default function App() {
     } catch { /* storage full or unavailable */ }
   }, [hydrated, activeUser, completed, customCourses, highImpact, otherTamuHours, transferHours, apScores, apAlternates, hours.ringHours, hours.requiredCredits])
 
-  const isCompleted = (code: string) => completed.includes(code) || apCovered.has(code) || customCourses.some(c => c.completed && customCode(c) === code)
+  const isCompleted = (raw: string) => completedSet.has(toCode(raw) ?? '')
   const setApScore = (examId: string, value: string) => setApScores(previous => {
     const next = { ...previous }
     const score = Number(value)
@@ -639,8 +664,14 @@ export default function App() {
   const toggleApAlternate = (examId: string, checked: boolean) =>
     setApAlternates(previous => checked ? [...new Set([...previous, examId])] : previous.filter(id => id !== examId))
   const toggleCourse = (code: string, checked: boolean) => {
-    setCompleted(previous => checked ? [...new Set([...previous, code])] : previous.filter(c => c !== code))
-    setCustomCourses(previous => previous.map(c => customCode(c) === code ? { ...c, completed: checked } : c))
+    const canonical = toCode(code)
+    if (!canonical || apCovered.has(canonical)) return
+    setCompleted(previous => {
+      const next = new Set(previous.map(toCode).filter((item): item is string => item !== null))
+      if (checked) next.add(canonical); else next.delete(canonical)
+      return [...next]
+    })
+    setCustomCourses(previous => previous.map(c => customCode(c) === canonical ? { ...c, completed: checked } : c))
   }
   const toggleCustom = (course: CustomCourse, checked: boolean) => {
     const code = customCode(course)
@@ -668,7 +699,7 @@ export default function App() {
       setFormError(`${proposedCode} is worth ${known} credits in the catalog. Use that value.`); return
     }
     // Appending updates state; the save effect above writes it to `classes_${activeUser.uin}`.
-    setCustomCourses(previous => [...previous, { id: crypto.randomUUID(), name, credits, completed: proposedCode ? isCompleted(proposedCode) : false }])
+    setCustomCourses(previous => [...previous, { id: crypto.randomUUID(), name, credits, completed: proposedCode ? completed.some(raw => toCode(raw) === proposedCode) : false }])
     setCustomName(''); setCustomCredits('3'); setFormError('')
   }
 
@@ -694,9 +725,9 @@ export default function App() {
         onChange={event => setUccFilters(previous => ({ ...previous, [category.name]: event.target.value }))} />}
       <div style={{ maxHeight: 240, overflowY: 'auto', paddingTop: 8 }}>
         {shown.map(course => {
-          const viaAp = apCovered.has(course.canonical)
+          const viaAp = apCovered.has(toCode(course.canonical) ?? '')
           return <label key={course.canonical} style={row}>
-            <input type="checkbox" checked={course.completed} disabled={viaAp} onChange={event => toggleCourse(course.canonical, event.target.checked)} />
+            <input type="checkbox" checked={isCompleted(course.canonical)} disabled={viaAp} onChange={event => toggleCourse(course.canonical, event.target.checked)} />
             <span>{course.label} <small>({course.credits} cr)</small></span>
             {(viaAp || course.applied) && <small style={{ marginLeft: 'auto' }}>{viaAp ? 'AP credit' : 'Applied here'}</small>}
           </label>
@@ -763,6 +794,7 @@ const displaySemester = activeUser.sem
         <p className="intro__copy">Track completed credit and the requirements still ahead.</p>
       </div>
       {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
+
       <section
         className="requirements-table"
         aria-labelledby="etam-title"
@@ -810,7 +842,7 @@ const displaySemester = activeUser.sem
             {etamGroups.map(group => {
               const completedCount = group.courses.filter(course =>
                 course.alternatives.some(codes =>
-                  codes.every(code => completedSet.has(code))
+                  codes.every(code => isCompleted(code))
                 )
               ).length
 
@@ -856,7 +888,7 @@ const displaySemester = activeUser.sem
                                 <label key={code} style={row}>
                                   <input
                                     type="checkbox"
-                                    checked={completedSet.has(code)}
+                                    checked={isCompleted(code)}
                                     disabled={viaAp}
                                     onChange={event =>
                                       toggleCourse(code, event.target.checked)
@@ -890,7 +922,7 @@ const displaySemester = activeUser.sem
     gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
   }}>
     <label>
-      Other TAMU hours not listed in this planner (electives, etc.)
+      Other TAMU hours (total / Ring hours only)
       <input
         style={{
           ...control,
@@ -909,7 +941,7 @@ const displaySemester = activeUser.sem
     </label>
 
     <label>
-      Other transfer / credit-by-exam hours (excluding AP entered below)
+      Other transfer / credit-by-exam hours (total / Ring only; excluding AP below)
       <input
         style={{
           ...control,
@@ -967,7 +999,7 @@ const displaySemester = activeUser.sem
         </section>
         <section className="requirements-column">
           <div className="column-heading"><span>02</span><h2>Degree (Major)</h2></div>
-          <p style={{ padding: '0 12px', fontSize: 13 }}>CS BS · Major requirements. Check courses you have completed. UCC is tracked in the next column; ETAM and first-year requirements are not included yet.</p>
+          <p style={{ padding: '0 12px', fontSize: 13 }}>CS BS · Major requirements. Check courses you have completed. UCC is tracked in the next column; ETAM coursework is tracked above. Degree credit is awarded only for configured major and UCC requirements.</p>
           <p style={{ padding: '0 12px' }}>{report.major_checklist_complete ? 'Major checklist complete' : 'Major checklist in progress'}</p>
           <ul aria-label="CS BS requirements" style={{ listStyle: 'none', margin: 0, padding: 12 }}>
             {requirements.map(requirement => <li key={requirement.id} style={panel}>
@@ -980,6 +1012,7 @@ const displaySemester = activeUser.sem
                   {customCourses.length === 0 && <p style={{ fontSize: 12 }}>No courses added yet.</p>}
                   {customCourses.map(course => <div key={course.id} style={row}>
                     <label style={{ ...row, flex: 1 }}><input type="checkbox" checked={customCode(course) ? isCompleted(customCode(course)!) : course.completed}
+                      disabled={apCovered.has(customCode(course) ?? '')}
                       onChange={event => toggleCustom(course, event.target.checked)} /><span>{course.name} ({course.credits} cr)</span></label>
                     <button type="button" style={control} aria-label={`Remove ${course.name}`} onClick={() => removeCustom(course)}>Remove</button>
                   </div>)}
