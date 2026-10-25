@@ -1,12 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="<!-- figma:lang -->">
   <head>
+    <!-- figma:head-start -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Progress Dashboard</title>
+    <title><!-- figma:title --></title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <!-- figma:head-end -->
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main class="index-page">
+      <section class="index-card" aria-labelledby="index-title">
+        <div class="brand__mark index-logo" aria-label="App logo placeholder">
+          <span>LOGO</span>
+        </div>
+        <p class="eyebrow">Student planning portal</p>
+        <h1 id="index-title">Where would you like to go?</h1>
+        <div class="index-actions">
+          <a href="/degree.html">Degree planner</a>
+          <a href="/calendar.html">Calendar</a>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
