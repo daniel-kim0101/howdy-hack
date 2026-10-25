@@ -993,3 +993,20 @@ h1 {
     text-align: center;
   }
 }
+
+.topbar .brand__mark,
+.calendar-topbar .brand__mark {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.topbar .brand__mark::after,
+.calendar-topbar .brand__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid #e3bd72;
+  border-radius: inherit;
+  pointer-events: none;
+}
