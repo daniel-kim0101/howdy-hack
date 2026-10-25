@@ -128,7 +128,7 @@ export default function App() {
           <div className="brand__mark" aria-label="App logo placeholder">
             <span>LOGO</span>
           </div>
-          <a className="calendar-link" href="/calendar">
+          <a className="calendar-link" href="/calendar.html">
             <CalendarIcon />
             <span>Calendar</span>
           </a>
