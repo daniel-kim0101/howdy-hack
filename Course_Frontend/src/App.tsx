@@ -1062,14 +1062,63 @@ const displaySemester = activeUser.sem
             </li>)}
           </ul>
         </section>
-        <section className="requirements-column requirements-column--ucc">
-          <div className="column-heading"><span>03</span><h2>UCC + Other Requirements</h2></div>
-          <div className="ucc-grid">{ucc.categories.map(category => <article className="ucc-card" key={category.name}>
-            <h3>{category.name}</h3>
-            <p>{category.required === null ? `${category.earned} credits applied`
-              : `${category.earned} / ${category.required} credits applied · ${category.complete ? 'Complete' : `${category.remaining} credits remaining`}`}</p>
-            {renderUccCourses(category)}
-          </article>)}</div>
+        <section
+          className="requirements-column requirements-column--ucc"
+          style={{
+            display: 'block',
+            height: 'auto',
+            minHeight: 0,
+            alignSelf: 'start',
+          }}
+        >
+          <div className="column-heading">
+            <span>03</span>
+            <h2>UCC + Other Requirements</h2>
+          </div>
+
+          <div
+            className="ucc-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile
+                ? '1fr'
+                : 'repeat(3, minmax(0, 1fr))',
+              gridTemplateRows: 'none',
+              gridAutoRows: 'auto',
+              height: 'auto',
+              minHeight: 0,
+              alignItems: 'start',
+              alignContent: 'start',
+              flex: 'none',
+            }}
+          >
+            {ucc.categories.map(category => (
+              <article
+                className="ucc-card"
+                key={category.name}
+                style={{
+                  display: 'block',
+                  height: 'auto',
+                  minHeight: 0,
+                  minWidth: 0,
+                }}
+              >
+                <h3>{category.name}</h3>
+
+                <p>
+                  {category.required === null
+                    ? `${category.earned} credits applied`
+                    : `${category.earned} / ${category.required} credits applied · ${
+                        category.complete
+                          ? 'Complete'
+                          : `${category.remaining} credits remaining`
+                      }`}
+                </p>
+
+                {renderUccCourses(category)}
+              </article>
+            ))}
+          </div>
         </section>
       </div>
     </section>
