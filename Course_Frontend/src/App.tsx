@@ -89,7 +89,10 @@ function SlidingText({ children }: { children: string }) {
 
     measure()
     const observer = new ResizeObserver(measure)
-    observer.observe(containerRef.current)
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+    // observer.observe(containerRef.current)
     return () => observer.disconnect()
   }, [children])
 
