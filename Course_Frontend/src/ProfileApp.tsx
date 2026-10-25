@@ -109,8 +109,7 @@ export default function ProfileApp() {
     return (
         <main className="index-page">
             <section className="index-card" aria-labelledby="profile-title">
-                <div className="brand__mark index-logo">
-                    <div className="brand__mark index-logo"
+                <div className="brand__mark index-logo"
                 >
                     <img
                         src="/app-logo.png"
@@ -123,7 +122,6 @@ export default function ProfileApp() {
                         }}
                         />
                     </div>
-                </div>
                 <p className="eyebrow">Student planning portal</p>
                 <h1 id="profile-title">Create your profile</h1>
                 <p className="signin-intro">Enter your information to get started.</p>
