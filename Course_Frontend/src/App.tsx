@@ -379,6 +379,41 @@ function allocate(candidates: Set<string>, eligible: Record<string, Set<string>>
   return result
 }
 
+/** Whole-course UCC allocation: highest hours first; stop at or above the target.
+ * Used by both the cards and degree totals so their applied courses agree.
+ * Categories without a configured target retain the evaluator's display-only result.
+ */
+function applyWholeCourseUcc(category: UccCategoryResult, isCompleted: (code: string) => boolean): UccCategoryResult {
+  const target = MAJOR_CONFIG.uccTargets[category.name]
+  if (!Number.isFinite(target) || target < 0) return category
+  const candidates = new Map<string, number>()
+  for (const course of category.courses) {
+    const code = toCode(course.canonical)
+    if (!code || !isCompleted(code)) continue
+    const hours = creditOf(code)
+    if (hours !== undefined && Number.isFinite(hours) && hours > 0) candidates.set(code, hours)
+  }
+  const ranked = [...candidates].sort(([a, ah], [b, bh]) => bh - ah || a.localeCompare(b))
+  const selected = new Set<string>()
+  let earned = 0
+  for (const [code, hours] of ranked) {
+    if (earned >= target) break
+    selected.add(code)
+    earned += hours // Never truncate the final course to the remaining requirement.
+  }
+  return {
+    ...category,
+    required: target,
+    earned,
+    remaining: Math.max(0, target - earned),
+    complete: earned >= target,
+    courses: category.courses.map(course => {
+      const code = toCode(course.canonical)
+      return { ...course, completed: code !== null && isCompleted(code), applied: code !== null && selected.has(code) }
+    }),
+  }
+}
+
 function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccCategories: UccCategoryResult[] = []): Report {
   // Major credits win over UCC credits for the same course.
   const credits = new Map<string, number>([
@@ -482,21 +517,12 @@ function buildReport(completedCourses: string[], complementary: CustomCourse[], 
     // Only categories explicitly required by this degree can add degree hours.
     const target = MAJOR_CONFIG.uccTargets[category.name]
     if (!Number.isFinite(target) || target <= 0) continue
-    let remaining = target
-    const seenCourses = new Set<string>()
-    // Prefer courses already used by the major, so overlapping requirements
-    // do not create additional degree hours from surplus core courses.
-    const courses = [...category.courses].sort((a, b) =>
-      Number(applied.has(toCode(b.canonical) ?? '')) - Number(applied.has(toCode(a.canonical) ?? '')))
-    for (const course of courses) {
+    const selected = applyWholeCourseUcc(category, code => completed.has(code))
+    for (const course of selected.courses) {
       const code = toCode(course.canonical)
-      if (!code || !completed.has(code) || seenCourses.has(code)) continue
-      if (!course.applied && !applied.has(code)) continue
-      seenCourses.add(code)
-      const used = Math.min(remaining, credits.get(code) ?? 0)
-      if (used <= 0) continue
-      degreeHoursByCourse.set(code, Math.max(degreeHoursByCourse.get(code) ?? 0, used))
-      remaining -= used
+      if (!code || !course.applied) continue
+      // Shared major/UCC courses and cross-listed aliases contribute hours once.
+      degreeHoursByCourse.set(code, credits.get(code) ?? 0)
     }
   }
   const appliedAll = new Set(degreeHoursByCourse.keys())
@@ -1065,7 +1091,15 @@ export default function App() {
     for (const course of customCourses) if (course.completed) { const code = customCode(course); if (code) set.add(code) }
     return set
   }, [completedWithAp, customCourses])
-  const ucc = useMemo(() => evaluateUcc(uccTable, code => completedSet.has(toCode(code) ?? ''), MAJOR_CONFIG.uccTargets), [completedSet])
+  const ucc = useMemo(() => {
+    const result = evaluateUcc(uccTable, code => completedSet.has(toCode(code) ?? ''), MAJOR_CONFIG.uccTargets)
+    const categories = result.categories.map(category => applyWholeCourseUcc(category, code => completedSet.has(code)))
+    const appliedCodes = [...new Set(categories.flatMap(category => category.courses
+      .filter(course => course.applied)
+      .map(course => toCode(course.canonical))
+      .filter((code): code is string => code !== null)))]
+    return { ...result, categories, appliedCodes }
+  }, [completedSet])
   const report = useMemo(() => buildReport(completedWithAp, customCourses, highImpact, ucc.categories), [completedWithAp, customCourses, highImpact, ucc])
   const requirements = report.CPSC_BS
 

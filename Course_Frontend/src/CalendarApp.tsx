@@ -296,7 +296,7 @@ export default function CalendarApp() {
                       {dayEvents.map((event, index) => {
                         const start = formatTime(event.start)
                         const end = formatTime(event.end)
-                        const time = start && end ? `${start} – ${end}` : start
+                        const time = start && end ? `${start} – ${end}` : start || (end ? `Ends ${end}` : '')
                         const bg = event.color || DEFAULT_COLOR
                         return (
                           <label
@@ -319,7 +319,7 @@ export default function CalendarApp() {
                               onChange={() => removeEvent(event)}
                               aria-label={`Check off ${event.event}`}
                             />
-                            <span>{start && `${start} `}{event.event}</span>
+                            <span>{time && `${time} `}{event.event}</span>
                           </label>
                         )
                       })}
