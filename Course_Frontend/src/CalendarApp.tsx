@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const months = Array.from({ length: 12 }, (_, month) =>
@@ -120,8 +120,83 @@ export default function CalendarApp() {
   const [focusedDate, setFocusedDate] = useState(() => parsedEventDate ?? today)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerYear, setPickerYear] = useState(() => (parsedEventDate ?? today).getFullYear())
-  const [uin] = useState(getUin)
-  const [events, setEvents] = useState<CalendarEvent[]>(() => (uin === null ? [] : readEvents(uin)))
+  const [uin, setUin] = useState(getUin)
+  const [events, setEvents] = useState<CalendarEvent[]>(() =>
+    uin === null ? [] : readEvents(uin)
+  )
+
+  const [studentInfo, setStudentInfo] = useState({
+    name: '',
+    year: '',
+    semester: '',
+  })
+
+  useEffect(() => {
+    const updateFromStorage = () => {
+      try {
+        const raw = localStorage.getItem('activeLoggedInUser')
+        const user = raw ? JSON.parse(raw) : null
+
+        if (
+          !user ||
+          user.uin === undefined ||
+          user.uin === null ||
+          user.uin === ''
+        ) {
+          window.location.href = '/index.html'
+          return
+        }
+
+        const year = String(user.year || '')
+
+        setUin(user.uin)
+        setStudentInfo({
+          name: String(user.name || ''),
+          year: year.charAt(0).toUpperCase() + year.slice(1),
+          semester:
+            user.sem !== undefined &&
+            user.sem !== null &&
+            user.sem !== ''
+              ? `Semester ${user.sem}`
+              : String(user.semester || ''),
+        })
+
+        setEvents(readEvents(user.uin))
+      } catch {
+        window.location.href = '/index.html'
+      }
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (
+        event.key === null ||
+        event.key === 'activeLoggedInUser' ||
+        event.key === eventsKey(getUin() ?? '')
+      ) {
+        updateFromStorage()
+      }
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        updateFromStorage()
+      }
+    }
+
+    updateFromStorage()
+
+    window.addEventListener('focus', updateFromStorage)
+    window.addEventListener('pageshow', updateFromStorage)
+    window.addEventListener('storage', handleStorage)
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      window.removeEventListener('focus', updateFromStorage)
+      window.removeEventListener('pageshow', updateFromStorage)
+      window.removeEventListener('storage', handleStorage)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [])
 
   // Events grouped by YYYY-MM-DD and sorted so the earliest start is at the top of each day.
   const eventsByDate = useMemo(() => {
@@ -187,13 +262,18 @@ export default function CalendarApp() {
         <div className="calendar-identity">
           <div className="metric">
             <span className="metric__label">Student</span>
-            <strong>Daniel Kim</strong>
-            <span className="metric__detail">UIN 93535</span>
+            <strong>{studentInfo.name}</strong>
+            <span className="metric__detail">
+              UIN {uin}
+            </span>
           </div>
+
           <div className="metric">
             <span className="metric__label">Academic year</span>
-            <strong>Freshman</strong>
-            <span className="metric__detail">1st semester</span>
+            <strong>{studentInfo.year}</strong>
+            <span className="metric__detail">
+              {studentInfo.semester}
+            </span>
           </div>
         </div>
 
