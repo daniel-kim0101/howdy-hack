@@ -506,45 +506,98 @@ h1 {
   line-height: 1.05;
 }
 
-.index-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 38px;
+.signin-intro {
+  margin-top: 14px;
+  color: #726b67;
+  font-size: 14px;
 }
 
-.index-actions a {
+.auth-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 34px;
+  text-align: left;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  color: #4f0b1b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-control {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 14px 15px;
+  border: 1px solid #d8d0c4;
+  border-radius: 10px;
+  color: #211b1c;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.auth-control:focus {
+  outline: 2px solid #7a2738;
+  outline-offset: 2px;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.auth-submit {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
   padding: 15px 18px;
-  border: 1px solid #4f0b1b;
   border-radius: 10px;
   color: #fff;
   background: #4f0b1b;
   font-size: 13px;
   font-weight: 800;
+  cursor: pointer;
   transition:
-    color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
 }
 
-.index-actions a:last-child {
-  color: #4f0b1b;
-  background: transparent;
-}
-
-.index-actions a:hover {
+.auth-submit:hover {
   transform: translateY(-2px);
+  background: #681126;
 }
 
-.index-actions a:focus-visible {
+.auth-submit:focus-visible {
   outline: 2px solid #7a2738;
   outline-offset: 3px;
 }
 
 @media (max-width: 500px) {
-  .index-actions {
+  .auth-row {
     grid-template-columns: 1fr;
   }
+}
+
+.profile-prompt {
+  margin-top: 24px;
+  color: #726b67;
+  font-size: 13px;
+}
+
+.profile-prompt a {
+  color: #7a2738;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .calendar-topbar {
@@ -618,6 +671,7 @@ h1 {
 }
 
 .calendar-title-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -647,13 +701,55 @@ h1 {
   stroke-width: 1.7;
 }
 
-.month-picker input {
+.month-popover {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 10;
+  width: 270px;
+  padding: 14px;
+  border: 1px solid #d8d0c4;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(72, 52, 45, 0.18);
+}
+
+.year-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #4f0b1b;
+}
+
+.year-picker button,
+.month-options button {
+  border-radius: 7px;
+  color: #4f0b1b;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.year-picker button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d8d0c4;
+}
+
+.month-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.month-options button {
+  padding: 9px 6px;
+}
+
+.month-options button:hover,
+.year-picker button:hover {
+  background: #f1e4c8;
 }
 
 .month-controls {
@@ -707,8 +803,8 @@ h1 {
 }
 
 .calendar-day {
-  min-height: 132px;
-  padding: 12px;
+  min-height: 420px;
+  padding: 14px;
   border-top: 1px solid #d8d0c4;
   border-right: 1px solid #d8d0c4;
 }
@@ -874,7 +970,7 @@ h1 {
   }
 
   .calendar-day {
-    min-height: 92px;
+    min-height: 260px;
     padding: 7px;
   }
 
