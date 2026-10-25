@@ -14,6 +14,7 @@ import {
   AP_SCORES, DEFAULT_UCC_TARGETS, evaluateAp, evaluateUcc, parseAp, parseUcc,
   type UccCategoryResult,
 } from './creditSources'
+import etamFile from '../../Course_Data/ETAM.json'
 
 type StudentProfile = {
   name: string
@@ -151,8 +152,54 @@ for (const [key, info] of Object.entries(catalog)) {
 }
 const requiredSorted = [...new Set(requiredCodes)].sort()
 
+type EtamEntry = {
+  type: string
+  credits: number
+}
+
+const etamCatalog = etamFile as Record<string, EtamEntry>
+
+const etamGroups = [
+  { type: 'ETAM Engineering', label: 'Engineering' },
+  { type: 'ETAM Science', label: 'Science' },
+  { type: 'ETAM Math', label: 'Math' },
+].map(group => ({
+  ...group,
+  courses: Object.entries(etamCatalog)
+    .filter(([, entry]) => entry.type === group.type)
+    .map(([label, entry]) => ({
+      label,
+      credits: entry.credits,
+      // "/" means equivalent alternatives; "&" requires both courses.
+      alternatives: label.split('/').map(option =>
+        option.split('&').map(code => normalize(code, aliases))
+      ),
+    })),
+}))
+
+// Add credit values for ETAM courses absent from the major/UCC catalogs.
+// CHEM107 + CHEM117 is a combined four-credit option.
+const etamCredits = new Map<string, number>()
+
+for (const group of etamGroups) {
+  for (const course of group.courses) {
+    for (const alternative of course.alternatives) {
+      for (const code of alternative) {
+        const credits = course.label === 'CHEM107&CHEM117'
+          ? (code === 'CHEM107' ? 3 : 1)
+          : course.credits
+
+        if (!baseCredits.has(code) && !uccTable.credits.has(code)) {
+          etamCredits.set(code, credits)
+        }
+      }
+    }
+  }
+}
+
 /** Credits for any known course: the major's catalog first, then UCC.json. */
-const creditOf = (code: string) => baseCredits.get(code) ?? uccTable.credits.get(code)
+const creditOf = (code: string) =>
+  baseCredits.get(code) ?? uccTable.credits.get(code) ?? etamCredits.get(code)
 /** Canonical course ID, or null for things that are not one course code (e.g. AP's "SPECIAL"). */
 const toCode = (raw: string) => { try { return normalize(raw, aliases) } catch { return null } }
 
@@ -257,7 +304,11 @@ function allocate(candidates: Set<string>, eligible: Record<string, Set<string>>
 
 function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccApplied: Iterable<string> = []): Report {
   // Major credits win over UCC credits for the same course.
-  const credits = new Map<string, number>([...uccTable.credits, ...baseCredits])
+  const credits = new Map<string, number>([
+    ...etamCredits,
+    ...uccTable.credits,
+    ...baseCredits,
+  ])
   const completed = new Set<string>()
   for (const raw of completedCourses) {
     try { completed.add(normalize(raw, aliases)) } catch { /* ignore invalid saved codes */ }
@@ -712,7 +763,126 @@ const displaySemester = activeUser.sem
         <p className="intro__copy">Track completed credit and the requirements still ahead.</p>
       </div>
       {!report.total_credits_complete && <p role="alert">Total credits are incomplete. Credit values are missing for: {report.courses_missing_credit_values.join(', ')}.</p>}
+      <section
+        className="requirements-table"
+        aria-labelledby="etam-title"
+        style={{
+          display: 'block',
+          height: 'auto',
+          minHeight: 0,
+          marginBottom: 20,
+        }}
+      >
+        <div
+          className="requirements-column"
+          style={{
+            display: 'block',
+            height: 'auto',
+            minHeight: 0,
+          }}
+        >
+          <div className="column-heading">
+            <span>ETAM</span>
+            <h2 id="etam-title">Entry to a Major</h2>
+          </div>
 
+          <p style={{ padding: '0 12px', fontSize: 13 }}>
+            Select completed courses. This checklist tracks coursework only,
+            not ETAM eligibility or GPA.
+          </p>
+
+          <div
+            className="ucc-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile
+                ? '1fr'
+                : 'repeat(3, minmax(0, 1fr))',
+              gridTemplateRows: 'auto',
+              gridAutoRows: 'auto',
+              height: 'auto',
+              minHeight: 0,
+              alignItems: 'start',
+              alignContent: 'start',
+              flex: 'none',
+            }}
+          >
+            {etamGroups.map(group => {
+              const completedCount = group.courses.filter(course =>
+                course.alternatives.some(codes =>
+                  codes.every(code => completedSet.has(code))
+                )
+              ).length
+
+              return (
+                <article
+                  className="ucc-card"
+                  key={group.type}
+                  style={{
+                    display: 'block',
+                    height: 'auto',
+                    minHeight: 0,
+                    minWidth: 0,
+                  }}
+                >
+                  <h3>{group.label}</h3>
+
+                  <details>
+                    <summary>
+                      Select completed courses ({completedCount} / {group.courses.length})
+                    </summary>
+
+                    <div
+                      style={{
+                        paddingTop: 10,
+                        maxHeight: 260,
+                        overflowY: 'auto',
+                      }}
+                    >
+                      {group.courses.map(course => (
+                        <div key={course.label} style={panel}>
+                          <div style={{ marginBottom: 6 }}>
+                            <strong style={{ fontSize: 14 }}>
+                              {course.label}
+                            </strong>
+                            <small> ({course.credits} cr)</small>
+                          </div>
+
+                          {course.alternatives.flatMap(codes =>
+                            codes.map(code => {
+                              const viaAp = apCovered.has(code)
+
+                              return (
+                                <label key={code} style={row}>
+                                  <input
+                                    type="checkbox"
+                                    checked={completedSet.has(code)}
+                                    disabled={viaAp}
+                                    onChange={event =>
+                                      toggleCourse(code, event.target.checked)
+                                    }
+                                  />
+                                  <span>{code}</span>
+
+                                  {viaAp && (
+                                    <small style={{ marginLeft: 'auto' }}>
+                                      AP credit
+                                    </small>
+                                  )}
+                                </label>
+                              )
+                            })
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
       <section aria-label="Credit hours summary" style={panel}>
   <div style={{
     display: 'grid',
