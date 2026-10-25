@@ -15,6 +15,7 @@ import {
   type UccCategoryResult,
 } from './creditSources'
 import etamFile from '../../Course_Data/ETAM.json'
+import otherRequirementsFile from '../../Course_Data/OtherRequirements.json'
 
 type StudentProfile = {
   name: string
@@ -105,7 +106,38 @@ const DEGREE_TOTAL_CREDITS = 126
 const MAJOR_CONFIG = {
   uccTargets: { ...DEFAULT_UCC_TARGETS } as Record<string, number>,
 }
-const uccTable = parseUcc(uccFile as unknown)
+type ExtraRequirementData = {
+  required_credits: number
+  courses: Record<string, number>
+}
+
+const extraRequirements = otherRequirementsFile as Record<
+  string,
+  ExtraRequirementData
+>
+
+// A course can belong to a core category and CD/ICD at the same time.
+// Temporary unique keys preserve both entries during parsing.
+const combinedUccData: Record<string, unknown> = { ...uccFile }
+
+for (const [category, requirement] of Object.entries(extraRequirements)) {
+  if (
+    category === 'Foreign Language' ||
+    category === 'Writing / Communication'
+  ) {
+    continue
+  }
+  for (const [course, credits] of Object.entries(requirement.courses)) {
+    combinedUccData[`${course}::${category}`] = {
+      type: category,
+      credits,
+    }
+  }
+
+  MAJOR_CONFIG.uccTargets[category] = requirement.required_credits
+}
+
+const uccTable = parseUcc(combinedUccData)
 const apTable = parseAp(apFile as unknown)
 
 /** CSCE 120, csce120 -> CSCE120; known cross-listings share one ID. */
@@ -205,8 +237,46 @@ for (const group of etamGroups) {
     }
   }
 }
+const foreignConfig = (
+  otherRequirementsFile as unknown as Record<
+    string,
+    {
+      languages?: Record<string, string>
+      courses: Record<string, number>
+    }
+  >
+)['Foreign Language']
 
-const creditOf = (code: string) => baseCredits.get(code) ?? uccCredits.get(code) ?? etamCredits.get(code)
+const foreignLanguages = Object.entries(
+  foreignConfig.languages ?? {},
+).map(([prefix, name]) => ({
+  prefix,
+  name,
+}))
+
+const foreignCourses = Object.entries(
+  foreignConfig.courses,
+).map(([code, credits]) => {
+  const prefix = code.replace(/[0-9]/g, '')
+
+  return {
+    code,
+    credits,
+    language:
+      foreignLanguages.find(
+        language => language.prefix === prefix,
+      )?.name ?? prefix,
+  }
+})
+
+const foreignCredits = new Map(
+  foreignCourses.map(course => [course.code, course.credits])
+)
+const creditOf = (code: string) =>
+  baseCredits.get(code)
+  ?? uccCredits.get(code)
+  ?? etamCredits.get(code)
+  ?? foreignCredits.get(code)
 /** Canonical course ID, or null for things that are not one course code (e.g. AP's "SPECIAL"). */
 const toCode = (raw: string) => { try { return normalize(raw, aliases) } catch { return null } }
 
@@ -346,7 +416,12 @@ function applyWholeCourseUcc(category: UccCategoryResult, isCompleted: (code: st
 
 function buildReport(completedCourses: string[], complementary: CustomCourse[], highImpact: boolean, uccCategories: UccCategoryResult[] = []): Report {
   // Major credits win over UCC credits for the same course.
-  const credits = new Map<string, number>([...etamCredits, ...uccCredits, ...baseCredits])
+  const credits = new Map<string, number>([
+    ...foreignCredits,
+    ...etamCredits,
+    ...uccCredits,
+    ...baseCredits,
+  ])
   const completed = new Set<string>()
   for (const raw of completedCourses) {
     try { completed.add(normalize(raw, aliases)) } catch { /* ignore invalid saved codes */ }
@@ -559,8 +634,14 @@ function SlidingText({ children }: { children: string }) {
     measure()
 
     const observer = new ResizeObserver(measure)
-    observer.observe(containerRef.current)
-    observer.observe(textRef.current)
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    if (textRef.current) {
+      observer.observe(textRef.current)
+    }
 
     void document.fonts?.ready.then(measure)
 
@@ -599,6 +680,311 @@ function CalendarIcon() {
   </svg>
 }
 
+type WcCourse = {
+  id: string
+  name: string
+  credits: number
+  designation: 'W' | 'C'
+  confirmed: boolean
+}
+
+function WcCoursePanel({
+  uin,
+  isCompleted,
+}: {
+  uin: string | number
+  isCompleted: (code: string) => boolean
+}) {
+  const [courses, setCourses] = useState<WcCourse[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [name, setName] = useState('')
+  const [credits, setCredits] = useState('3')
+  const [designation, setDesignation] =
+    useState<'W' | 'C'>('W')
+  const [error, setError] = useState('')
+
+  const storageKey = `wc_courses_${uin}`
+
+  useEffect(() => {
+    setLoaded(false)
+
+    try {
+      const saved = localStorage.getItem(storageKey)
+      const parsed: unknown = saved
+        ? JSON.parse(saved)
+        : []
+
+      setCourses(
+        Array.isArray(parsed)
+          ? parsed.filter(
+              (item): item is WcCourse =>
+                !!item &&
+                typeof item === 'object' &&
+                typeof item.id === 'string' &&
+                typeof item.name === 'string' &&
+                Number.isInteger(item.credits) &&
+                item.credits > 0 &&
+                (item.designation === 'W' ||
+                  item.designation === 'C') &&
+                typeof item.confirmed === 'boolean',
+            )
+          : [],
+      )
+    } catch {
+      setCourses([])
+    }
+
+    setLoaded(true)
+  }, [storageKey])
+
+  useEffect(() => {
+    if (!loaded) return
+
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(courses),
+      )
+    } catch {
+      // Keep current entries if storage is unavailable.
+    }
+  }, [storageKey, loaded, courses])
+
+  const confirmedCourses = courses.filter(
+    course => course.confirmed,
+  )
+
+  const wCount = confirmedCourses.filter(
+    course => course.designation === 'W',
+  ).length
+
+  const cCount = confirmedCourses.filter(
+    course => course.designation === 'C',
+  ).length
+
+  const complete =
+    wCount >= 2 || (wCount >= 1 && cCount >= 1)
+
+  const addCourse = (event: FormEvent) => {
+    event.preventDefault()
+
+    const courseName = name.trim()
+    const hours = Number(credits)
+
+    if (
+      !courseName ||
+      !Number.isInteger(hours) ||
+      hours < 1
+    ) {
+      setError('Enter a course and positive whole-number credits.')
+      return
+    }
+
+    const identity = (value: string) =>
+      value.replace(/\s+/g, '').toUpperCase()
+
+    if (
+      courses.some(
+        course =>
+          identity(course.name) === identity(courseName),
+      )
+    ) {
+      setError('This course is already listed.')
+      return
+    }
+
+    const code = toCode(courseName)
+    const knownCredits = code
+      ? creditOf(code)
+      : undefined
+
+    if (
+      knownCredits !== undefined &&
+      knownCredits !== hours
+    ) {
+      setError(
+        `${code} is worth ${knownCredits} credits. Use that value.`,
+      )
+      return
+    }
+
+    setCourses(previous => [
+      ...previous,
+      {
+        id: crypto.randomUUID(),
+        name: courseName,
+        credits: hours,
+        designation,
+        confirmed: false,
+      },
+    ])
+
+    setName('')
+    setCredits('3')
+    setError('')
+  }
+
+  return (
+    <>
+      <p>
+        {complete ? 'Complete' : 'Not complete'}
+        {' · '}
+        {wCount} W / {cCount} C
+      </p>
+
+      <details>
+        <summary>
+          Add / select courses ({courses.length})
+        </summary>
+
+        <div
+          style={{
+            paddingTop: 8,
+            maxHeight: 260,
+            overflowY: 'auto',
+          }}
+        >
+          <p style={{ fontSize: 12 }}>
+            Add courses approved for your major.
+            Check a course after completing its W/C requirements.
+          </p>
+
+          {courses.map(course => (
+            <div key={course.id} style={panel}>
+              <label style={row}>
+                <input
+                  type="checkbox"
+                  checked={course.confirmed}
+                  disabled={!loaded}
+                  onChange={event => {
+                    const checked = event.target.checked
+
+                    setCourses(previous =>
+                      previous.map(item =>
+                        item.id === course.id
+                          ? { ...item, confirmed: checked }
+                          : item,
+                      ),
+                    )
+                  }}
+                />
+
+                <span>
+                  {course.name} ({course.credits} cr)
+                  {' · '}
+                  {course.designation}
+                </span>
+              </label>
+
+              {isCompleted(course.name) && (
+                <small>
+                  Course already recorded in your planner.
+                  Confirm W/C completion separately.
+                </small>
+              )}
+
+              <button
+                type="button"
+                style={{ ...control, marginTop: 6 }}
+                onClick={() =>
+                  setCourses(previous =>
+                    previous.filter(
+                      item => item.id !== course.id,
+                    ),
+                  )
+                }
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          <form
+            onSubmit={addCourse}
+            style={{
+              display: 'grid',
+              gap: 8,
+              paddingTop: 10,
+            }}
+          >
+            <label>
+              Course name or code
+
+              <input
+                style={{
+                  ...control,
+                  display: 'block',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+                value={name}
+                maxLength={160}
+                onChange={event =>
+                  setName(event.target.value)
+                }
+                required
+              />
+            </label>
+
+            <label>
+              Credits
+
+              <input
+                style={{
+                  ...control,
+                  display: 'block',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+                type="number"
+                min="1"
+                step="1"
+                value={credits}
+                onChange={event =>
+                  setCredits(event.target.value)
+                }
+                required
+              />
+            </label>
+
+            <label>
+              Course designation
+
+              <select
+                style={{
+                  ...control,
+                  display: 'block',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+                value={designation}
+                onChange={event =>
+                  setDesignation(
+                    event.target.value as 'W' | 'C',
+                  )
+                }
+              >
+                <option value="W">W — Writing</option>
+                <option value="C">C — Communication</option>
+              </select>
+            </label>
+
+            <button
+              type="submit"
+              style={control}
+              disabled={!loaded}
+            >
+              Add course
+            </button>
+
+            {error && <p role="alert">{error}</p>}
+          </form>
+        </div>
+      </details>
+    </>
+  )
+}
+
 export default function App() {
   const isMobile = useMediaQuery('(max-width: 800px)')
   const [activeUser, setActiveUser] = useState<ActiveUser | null>(null)
@@ -615,6 +1001,52 @@ export default function App() {
   const [apAlternates, setApAlternates] = useState<string[]>([])
   const [apFilter, setApFilter] = useState('')
   const [uccFilters, setUccFilters] = useState<Record<string, string>>({})
+    const [otherRequirements, setOtherRequirements] = useState<string[]>([])
+  const [otherRequirementsLoaded, setOtherRequirementsLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!activeUser) return
+
+    setOtherRequirementsLoaded(false)
+
+    try {
+      const saved = localStorage.getItem(
+        `other_requirements_${activeUser.uin}`
+      )
+      const parsed: unknown = saved ? JSON.parse(saved) : []
+
+      setOtherRequirements(
+        Array.isArray(parsed)
+          ? parsed.filter((item): item is string => typeof item === 'string')
+          : []
+      )
+    } catch {
+      setOtherRequirements([])
+    }
+
+    setOtherRequirementsLoaded(true)
+  }, [activeUser])
+
+  useEffect(() => {
+    if (!activeUser || !otherRequirementsLoaded) return
+
+    try {
+      localStorage.setItem(
+        `other_requirements_${activeUser.uin}`,
+        JSON.stringify(otherRequirements)
+      )
+    } catch {
+      // Keep the current selections if storage is unavailable.
+    }
+  }, [activeUser, otherRequirementsLoaded, otherRequirements])
+
+  const toggleOtherRequirement = (id: string, checked: boolean) => {
+    setOtherRequirements(previous =>
+      checked
+        ? [...new Set([...previous, id])]
+        : previous.filter(item => item !== id)
+    )
+  }
 
   // 1. LOAD ACTIVE SESSION + this user's saved classes
   useEffect(() => {
@@ -788,6 +1220,19 @@ const displaySemester = activeUser.sem
   : activeUser.semester || student.semester
 
   return <main>
+      <style>{`
+      .requirements-column--ucc .ucc-grid {
+        align-items: stretch !important;
+      }
+
+      .requirements-column--ucc .ucc-grid > .ucc-card {
+        height: auto !important;
+        min-height: 0 !important;
+        align-self: stretch !important;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ddd6ce;
+      }
+    `}</style>
     <header className="topbar">
       <div className="brand">
         <div
@@ -868,7 +1313,7 @@ const displaySemester = activeUser.sem
               gridAutoRows: 'auto',
               height: 'auto',
               minHeight: 0,
-              alignItems: 'start',
+              alignItems: 'stretch',
               alignContent: 'start',
               flex: 'none',
             }}
@@ -1118,6 +1563,153 @@ const displaySemester = activeUser.sem
                 {renderUccCourses(category)}
               </article>
             ))}
+            {[
+              {
+                id: 'wc',
+                title: 'Writing / Communication',
+                options: [
+                  { id: 'wc-first-w', label: 'First W course completed' },
+                  {
+                    id: 'wc-second',
+                    label: 'Second W or C course completed',
+                  },
+                ],
+              },
+              {
+                id: 'foreign-language',
+                title: 'Foreign Language',
+                options: [
+                  {
+                    id: 'foreign-language-complete',
+                    label: 'Requirement satisfied',
+                  },
+                ],
+              },
+            ].map(requirement => {
+              const done =
+                requirement.id === 'foreign-language'
+                  ? foreignLanguages.some(language =>
+                      [
+                        [101, 102],
+                        [102, 201],
+                        [201, 202],
+                      ].some(sequence =>
+                        sequence.every(level =>
+                          isCompleted(
+                            `${language.prefix}${level}`,
+                          ),
+                        ),
+                      ),
+                    )
+                  : requirement.options.every(option =>
+                      otherRequirements.includes(option.id),
+                    )
+
+              return (
+                <article
+                  className="ucc-card"
+                  key={requirement.id}
+                  style={{
+                    display: 'block',
+                    height: 'auto',
+                    minHeight: 0,
+                    minWidth: 0,
+                  }}
+                >
+                  <h3>{requirement.title}</h3>
+
+                  {requirement.id === 'wc' ? (
+                    <WcCoursePanel
+                      key={String(activeUser.uin)}
+                      uin={activeUser.uin}
+                      isCompleted={isCompleted}
+                    />
+                  ) : (
+                    <>
+                      <p>
+                        {done ? 'Complete' : 'Not complete'}
+                      </p>
+
+                      <details>
+                        <summary>
+                          Select completed courses (
+                          {foreignCourses.filter(course =>
+                            isCompleted(course.code),
+                          ).length}
+                          {' / '}
+                          {foreignCourses.length})
+                        </summary>
+
+                        <div
+                          style={{
+                            paddingTop: 8,
+                            maxHeight: 260,
+                            overflowY: 'auto',
+                          }}
+                        >
+                          {foreignLanguages.map(language => (
+                            <div
+                              key={language.prefix}
+                              style={{ marginBottom: 12 }}
+                            >
+                              <h4 style={{ margin: '6px 0' }}>
+                                {language.name}
+                              </h4>
+
+                              {foreignCourses
+                                .filter(course =>
+                                  course.code.startsWith(
+                                    language.prefix,
+                                  ),
+                                )
+                                .map(course => {
+                                  const code = toCode(course.code)!
+                                  const viaAp = apCovered.has(code)
+
+                                  return (
+                                    <label
+                                      key={course.code}
+                                      style={row}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isCompleted(code)}
+                                        disabled={viaAp}
+                                        onChange={event =>
+                                          toggleCourse(
+                                            code,
+                                            event.target.checked,
+                                          )
+                                        }
+                                      />
+
+                                      <span>
+                                        {course.code}
+                                        {' ('}
+                                        {course.credits} cr)
+                                      </span>
+
+                                      {viaAp && (
+                                        <small
+                                          style={{
+                                            marginLeft: 'auto',
+                                          }}
+                                        >
+                                          AP credit
+                                        </small>
+                                      )}
+                                    </label>
+                                  )
+                                })}
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    </>
+                  )}
+                </article>
+              )
+            })}
           </div>
         </section>
       </div>
